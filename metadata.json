@@ -1,0 +1,18 @@
+{
+    "KPlugin": {
+        "Id": "org.kde.plasma.kickoff-football",
+        "Name": "Kickoff",
+        "Description": "Live football scores, tables, match events, and goal notifications",
+        "Icon": "trophy-symbolic",
+        "Category": "Information",
+        "License": "MIT",
+        "Version": "1.0.0",
+        "Website": "https://github.com/atsokolas/omarchy-kickoff-plugin",
+        "Authors": [
+            { "Name": "atsokolas (Kickoff)" },
+            { "Name": "Cesar" }
+        ]
+    },
+    "KPackageStructure": "Plasma/Applet",
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

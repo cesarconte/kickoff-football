@@ -1,0 +1,21 @@
+# Compiled QML & JavaScript cache
+*.qmlc
+*.jsc
+*.rcc
+
+# Temporary & backup files
+*~
+*.swp
+*.bak
+*.orig
+.directory
+
+# OS & Desktop files
+.DS_Store
+Thumbs.db
+
+# IDE & Editor settings
+.idea/
+.vscode/
+.cursor/
+*.code-workspace
