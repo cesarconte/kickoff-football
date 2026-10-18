@@ -406,11 +406,43 @@ function filterLeagues(leagues, selected, followed, mode) {
     var followedHit = false
     var matches = lg.matches || []
     for (var j = 0; j < matches.length; j++) {
-      if (involvedFollowed(matches[j], fol)) followedHit = true
+      if (fol[String(matches[j].home && matches[j].home.id)]
+          || fol[String(matches[j].away && matches[j].away.id)]) followedHit = true
     }
     if (selectedHit || followedHit) out.push(lg)
   }
   return out
+}
+
+function orderLeagues(leagues, selected) {
+  var list = arrayLike(leagues) || []
+  var choices = parseIdList(selected)
+  var ordered = []
+  var used = {}
+
+  for (var i = 0; i < choices.length; i++) {
+    var selectedId = String(choices[i].id)
+    for (var j = 0; j < list.length; j++) {
+      var league = list[j] || {}
+      var id = String(league.id || "")
+      var primaryId = String(league.primaryId || id)
+      if (!used[id] && !used[primaryId] && (id === selectedId || primaryId === selectedId)) {
+        ordered.push(league)
+        used[id] = true
+        used[primaryId] = true
+        break
+      }
+    }
+  }
+
+  for (var k = 0; k < list.length; k++) {
+    var remaining = list[k] || {}
+    var remainingId = String(remaining.id || "")
+    var remainingPrimaryId = String(remaining.primaryId || remainingId)
+    if (!used[remainingId] && !used[remainingPrimaryId]) ordered.push(remaining)
+  }
+
+  return ordered
 }
 
 var PINNED_LEAGUE_ID = "followed"
@@ -1126,6 +1158,7 @@ if (typeof module !== "undefined") {
     toggleFollowed: toggleFollowed,
     involvedFollowed: involvedFollowed,
     filterLeagues: filterLeagues,
+    orderLeagues: orderLeagues,
     pinFollowed: pinFollowed,
     compareMatches: compareMatches,
     matchOrderRank: matchOrderRank,

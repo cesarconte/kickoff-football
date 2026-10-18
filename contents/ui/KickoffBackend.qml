@@ -50,9 +50,9 @@ Item {
         ? String(followedTeams[0].leagueId)
         : (selectedLeagues.length ? String(selectedLeagues[0].id) : "")
 
-    readonly property var visibleLeagues: Model.pinFollowed(
+    readonly property var visibleLeagues: Model.orderLeagues(
         Model.filterLeagues(leagues, selectedLeagues, followedTeams, "selected"),
-        followedTeams
+        selectedLeagues
     )
     readonly property var followedMatches: Model.followingMatches(leagues, followedTeams)
     readonly property var live: Model.liveMatches(leagues)
