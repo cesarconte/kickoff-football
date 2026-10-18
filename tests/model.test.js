@@ -80,3 +80,21 @@ test("selected competitions can be reordered without mutating the original list"
   assert.deepEqual(Model.moveItem(choices, 2, 1), choices);
   assert.deepEqual(choices, [{ id: "47" }, { id: "87" }, { id: "9907" }]);
 });
+
+test("matches tab keeps competitions in Settings order and leaves followed matches in their league", () => {
+  const apiLeagues = [
+    { id: "47", primaryId: "47", name: "Premier League", matches: [match(1, "live", 11, 12)] },
+    { id: "9907", primaryId: "9907", name: "Liga F", matches: [match(2, "upcoming", 401657, 22)] },
+    { id: "87", primaryId: "87", name: "LaLiga", matches: [match(3, "finished", 31, 32)] }
+  ];
+  const selected = [{ id: "87", name: "LaLiga" }, { id: "47", name: "Premier League" }];
+  const followed = [{ id: "401657", name: "Barcelona (W)", leagueId: "9907", leagueName: "Liga F" }];
+  const visible = Model.orderLeagues(
+    Model.filterLeagues(apiLeagues, selected, followed, "selected"),
+    selected
+  );
+
+  assert.deepEqual(visible.map(league => league.name), ["LaLiga", "Premier League", "Liga F"]);
+  assert.equal(visible[1].matches.length, 1);
+  assert.equal(visible[2].matches[0].home.id, "401657");
+});
