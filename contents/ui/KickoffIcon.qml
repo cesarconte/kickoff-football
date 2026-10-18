@@ -1,4 +1,5 @@
 import QtQuick
+import org.kde.kirigami as Kirigami
 
 Item {
     id: root
@@ -10,12 +11,10 @@ Item {
     width: iconSize
     height: iconSize
 
-    Image {
+    Kirigami.Icon {
         anchors.fill: parent
-        source: Qt.resolvedUrl("../icon.svg")
-        fillMode: Image.PreserveAspectFit
-        smooth: true
-        mipmap: true
+        source: Qt.resolvedUrl("../images/football-symbolic.svg")
+        color: Kirigami.Theme.textColor
     }
 
     transformOrigin: Item.Center
