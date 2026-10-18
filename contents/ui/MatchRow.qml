@@ -11,6 +11,13 @@ Item {
     property var goalFlashIds: ({})
     property bool showCompetition: false
 
+    activeFocusOnTab: true
+    Accessible.role: Accessible.Button
+    Accessible.name: match ? match.home.name + " " + Model.compactScore(match) + " " + match.away.name + ", " + matchClock : ""
+    Keys.onReturnPressed: root.clicked()
+    Keys.onEnterPressed: root.clicked()
+    Keys.onSpacePressed: root.clicked()
+
     signal clicked()
     signal hovered(bool isHovered)
 
@@ -57,8 +64,10 @@ Item {
         color: root.live || root.justScored
             ? Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.08 + root.goalFlash * 0.18)
             : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, mouse.containsMouse ? 0.08 : 0.03)
-        border.width: 1
-        border.color: root.live || root.justScored
+        border.width: root.activeFocus ? 2 : 1
+        border.color: root.activeFocus
+            ? root.accent
+            : root.live || root.justScored
             ? Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.6 + root.goalFlash * 0.4)
             : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, mouse.containsMouse ? 0.25 : 0.1)
 

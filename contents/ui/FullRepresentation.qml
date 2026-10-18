@@ -8,12 +8,21 @@ import "Model.js" as Model
 Item {
     id: root
 
+
     required property var backend
     property bool popupOpen: false
 
     property string page: "list"      // "list" | "match" | "settings"
     property string tab: "matches"    // "matches" | "following" | "table"
     property string selectedMatchId: ""
+
+    readonly property string tableLeagueName: {
+        for (var i = 0; i < backend.tableLeagues.length; i++) {
+            if (String(backend.tableLeagues[i].id) === String(backend.tableLeagueId))
+                return backend.tableLeagues[i].name;
+        }
+        return backend.table.name || "";
+    }
 
     readonly property color foreground: Kirigami.Theme.textColor
     readonly property color dim: Kirigami.Theme.disabledTextColor
@@ -44,14 +53,19 @@ Item {
 
     function setTab(newTab) {
         tab = newTab;
-        if (newTab === "table" && (!backend.table || !backend.table.rows || backend.table.rows.length === 0)) {
-            backend.loadTable(backend.tableLeagueId || "47");
+        if (newTab === "table" && backend.tableLeagues.length > 0 && (!backend.table || !backend.table.rows || backend.table.rows.length === 0)) {
+            backend.loadTable(backend.tableLeagueId || backend.preferredTableLeagueId);
         }
+    }
+
+    function shiftTableLeague(direction) {
+        var next = Model.adjacentCompetition(backend.tableLeagues, backend.tableLeagueId, direction);
+        if (next) backend.loadTable(next.id);
     }
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 10
+        anchors.margins: Kirigami.Units.largeSpacing
         spacing: 8
 
         // Top Navigation Header
@@ -85,17 +99,12 @@ Item {
                 elide: Text.ElideRight
             }
 
-            // Test Demo Goal button (small)
-            PlasmaComponents3.ToolButton {
-                visible: root.page === "settings"
-                icon.name: "media-playback-start"
-                text: i18n("Demo Goal")
-                onClicked: backend.demoGoal()
-            }
-
             PlasmaComponents3.ToolButton {
                 icon.name: root.page === "settings" ? "dialog-ok" : "settings-configure"
+                text: root.page === "settings" ? i18n("Close settings") : i18n("Settings")
                 display: PlasmaComponents3.AbstractButton.IconOnly
+                QQC2.ToolTip.text: text
+                QQC2.ToolTip.visible: hovered || activeFocus
                 onClicked: {
                     if (root.page === "settings") root.showList();
                     else root.showSettings();
@@ -104,18 +113,14 @@ Item {
 
             PlasmaComponents3.ToolButton {
                 icon.name: "view-refresh"
+                text: i18n("Refresh")
+                visible: root.page !== "settings"
                 display: PlasmaComponents3.AbstractButton.IconOnly
-                enabled: !backend.refreshing
+                QQC2.ToolTip.text: text
+                QQC2.ToolTip.visible: hovered || activeFocus
                 onClicked: {
                     if (root.tab === "table") backend.loadTable(backend.tableLeagueId);
                     else backend.refreshMatches();
-                }
-                RotationAnimator on rotation {
-                    running: backend.refreshing
-                    from: 0
-                    to: 360
-                    duration: 1000
-                    loops: Animation.Infinite
                 }
             }
         }
@@ -134,7 +139,10 @@ Item {
 
                 PlasmaComponents3.ToolButton {
                     icon.name: "go-previous"
+                    text: i18n("Previous day")
                     display: PlasmaComponents3.AbstractButton.IconOnly
+                    QQC2.ToolTip.text: text
+                    QQC2.ToolTip.visible: hovered || activeFocus
                     onClicked: backend.shiftDate(-1)
                 }
 
@@ -142,25 +150,19 @@ Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 24
 
-                    Text {
-                        textFormat: Text.PlainText
+                    PlasmaComponents3.ToolButton {
                         anchors.centerIn: parent
                         text: Model.dateHeading(backend.dateKey, backend.todayKey)
-                        color: root.foreground
-                        font.bold: true
-                        font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: backend.jumpToday()
-                        }
+                        onClicked: backend.jumpToday()
                     }
                 }
 
                 PlasmaComponents3.ToolButton {
                     icon.name: "go-next"
+                    text: i18n("Next day")
                     display: PlasmaComponents3.AbstractButton.IconOnly
+                    QQC2.ToolTip.text: text
+                            QQC2.ToolTip.visible: hovered || activeFocus
                     onClicked: backend.shiftDate(1)
                 }
             }
@@ -342,28 +344,50 @@ Item {
                     visible: root.tab === "table"
                     spacing: 8
 
-                    // Featured league selector chips (using horizontal Flickable to prevent scrollbar binding loops)
-                    Flickable {
+                    Text {
+                        textFormat: Text.PlainText
+                        visible: backend.tableLeagues.length === 0
+                        text: i18n("Select leagues in Settings to view their standings.")
+                        color: root.dim
+                        wrapMode: Text.WordWrap
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 36
-                        contentWidth: leagueChipRow.implicitWidth
-                        contentHeight: 36
-                        flickableDirection: Flickable.HorizontalFlick
-                        clip: true
+                    }
 
-                        Row {
-                            id: leagueChipRow
-                            spacing: 6
-                            height: 36
-                            Repeater {
-                                model: Model.FEATURED_LEAGUES
-                                delegate: PlasmaComponents3.Button {
-                                    required property var modelData
-                                    text: modelData.name
-                                    highlighted: String(backend.tableLeagueId) === String(modelData.id)
-                                    onClicked: backend.loadTable(modelData.id)
-                                }
-                            }
+                    // Use the same previous/next pattern as the date selector.
+                    RowLayout {
+                        Layout.fillWidth: true
+                        visible: backend.tableLeagues.length > 0
+                        spacing: Kirigami.Units.smallSpacing
+
+                        PlasmaComponents3.ToolButton {
+                            icon.name: "go-previous"
+                            text: i18n("Previous competition")
+                            display: PlasmaComponents3.AbstractButton.IconOnly
+                            enabled: backend.tableLeagues.length > 1
+                            QQC2.ToolTip.text: text
+                            QQC2.ToolTip.visible: hovered || activeFocus
+                            onClicked: root.shiftTableLeague(-1)
+                        }
+
+                        Text {
+                            textFormat: Text.PlainText
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: 0
+                            text: root.tableLeagueName
+                            color: root.foreground
+                            font.bold: true
+                            horizontalAlignment: Text.AlignHCenter
+                            elide: Text.ElideRight
+                        }
+
+                        PlasmaComponents3.ToolButton {
+                            icon.name: "go-next"
+                            text: i18n("Next competition")
+                            display: PlasmaComponents3.AbstractButton.IconOnly
+                            enabled: backend.tableLeagues.length > 1
+                            QQC2.ToolTip.text: text
+                            QQC2.ToolTip.visible: hovered || activeFocus
+                            onClicked: root.shiftTableLeague(1)
                         }
                     }
 
@@ -425,6 +449,7 @@ Item {
                         Text {
                             textFormat: Text.PlainText
                             Layout.preferredWidth: 36
+                            Layout.rightMargin: Kirigami.Units.smallSpacing
                             text: "PTS"
                             color: root.dim
                             font.bold: true
@@ -489,6 +514,7 @@ Item {
                             Text {
                                 textFormat: Text.PlainText
                                 Layout.preferredWidth: 36
+                                Layout.rightMargin: Kirigami.Units.smallSpacing
                                 text: String(modelData.pts)
                                 color: root.foreground
                                 font.bold: true
@@ -751,28 +777,119 @@ Item {
             Layout.fillHeight: true
             visible: root.page === "settings"
             clip: true
+            contentWidth: availableWidth
 
             ColumnLayout {
-                width: settingsScrollView.width - 12
+                width: settingsScrollView.availableWidth
                 spacing: 12
 
-                QQC2.CheckBox {
-                    text: i18n("Goal notifications (desktop alert when followed club scores)")
-                    checked: backend.notify
-                    onToggled: plasmoid.configuration.notify = checked
-                }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Kirigami.Units.smallSpacing
 
-                QQC2.CheckBox {
-                    text: i18n("Show all competitions (instead of featured only)")
-                    checked: backend.matchesFilter === "all"
-                    onToggled: plasmoid.configuration.matchesFilter = checked ? "all" : "featured"
+                    QQC2.CheckBox {
+                        id: notifyCheckBox
+                        checked: backend.notify
+                        Accessible.name: i18n("Goal notifications")
+                        onToggled: plasmoid.configuration.notify = checked
+                    }
+
+                    Text {
+                        textFormat: Text.PlainText
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        text: i18n("Show a desktop notification when a followed club scores")
+                        color: root.foreground
+                        wrapMode: Text.WordWrap
+                    }
                 }
 
                 Kirigami.Separator { Layout.fillWidth: true }
 
                 Text {
                     textFormat: Text.PlainText
-                    text: i18n("FOLLOW CLUBS")
+                    text: i18n("Competitions")
+                    color: root.dim
+                    font.bold: true
+                }
+
+                PlasmaComponents3.TextField {
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    placeholderText: i18n("Search competitions…")
+                    onTextChanged: backend.requestLeagueSearch(text)
+                }
+
+                Text {
+                    textFormat: Text.PlainText
+                    visible: backend.leagueSearchLoading
+                    text: i18n("Searching leagues…")
+                    color: root.dim
+                }
+
+                Repeater {
+                    model: backend.leagueSearchResults
+                    delegate: RowLayout {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        Text {
+                            textFormat: Text.PlainText
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: 0
+                            text: modelData.name + (modelData.ccode ? " · " + modelData.ccode : "")
+                            color: root.foreground
+                            elide: Text.ElideRight
+                        }
+
+                        PlasmaComponents3.Button {
+                            text: backend.isLeagueSelected(modelData.id) ? i18n("Selected") : i18n("Add")
+                            highlighted: backend.isLeagueSelected(modelData.id)
+                            onClicked: backend.toggleLeague(modelData)
+                        }
+                    }
+                }
+
+                Text {
+                    textFormat: Text.PlainText
+                    text: i18n("Selected competitions (%1)", backend.selectedLeagues.length)
+                    color: root.dim
+                    font.bold: true
+                }
+
+                Repeater {
+                    model: backend.selectedLeagues
+                    delegate: RowLayout {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        Text {
+                            textFormat: Text.PlainText
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: 0
+                            text: modelData.name
+                            color: root.foreground
+                            elide: Text.ElideRight
+                        }
+
+                        PlasmaComponents3.ToolButton {
+                            icon.name: "list-remove"
+                            text: i18n("Remove")
+                            display: PlasmaComponents3.AbstractButton.IconOnly
+                            QQC2.ToolTip.text: text
+                            QQC2.ToolTip.visible: hovered || activeFocus
+                            onClicked: backend.toggleLeague(modelData)
+                        }
+                    }
+                }
+
+                Kirigami.Separator { Layout.fillWidth: true }
+
+                Text {
+                    textFormat: Text.PlainText
+                    text: i18n("Follow clubs")
                     color: root.dim
                     font.bold: true
                 }
@@ -780,7 +897,8 @@ Item {
                 PlasmaComponents3.TextField {
                     id: searchField
                     Layout.fillWidth: true
-                    placeholderText: i18n("Search clubs (e.g. Barcelona, Arsenal, Boca...)")
+                    Layout.minimumWidth: 0
+                    placeholderText: i18n("Search clubs…")
                     onTextChanged: backend.requestSearch(text)
                 }
 
@@ -816,6 +934,7 @@ Item {
                             Text {
                                 textFormat: Text.PlainText
                                 Layout.fillWidth: true
+                                Layout.minimumWidth: 0
                                 text: modelData.name
                                 color: root.foreground
                                 elide: Text.ElideRight
@@ -824,6 +943,7 @@ Item {
                             Text {
                                 textFormat: Text.PlainText
                                 Layout.fillWidth: true
+                                Layout.minimumWidth: 0
                                 text: modelData.leagueName
                                 color: root.dim
                                 font.pixelSize: Kirigami.Theme.smallFont.pixelSize
@@ -843,7 +963,7 @@ Item {
 
                 Text {
                     textFormat: Text.PlainText
-                    text: i18n("Followed Clubs (%1)", backend.followedTeams.length)
+                    text: i18n("Followed clubs (%1)", backend.followedTeams.length)
                     color: root.dim
                     font.bold: true
                 }
@@ -868,6 +988,7 @@ Item {
                         Text {
                             textFormat: Text.PlainText
                             Layout.fillWidth: true
+                            Layout.minimumWidth: 0
                             text: modelData.name
                             color: root.foreground
                             elide: Text.ElideRight
@@ -876,6 +997,9 @@ Item {
                         PlasmaComponents3.ToolButton {
                             icon.name: "list-remove"
                             text: i18n("Remove")
+                            display: PlasmaComponents3.AbstractButton.IconOnly
+                            QQC2.ToolTip.text: text
+                            QQC2.ToolTip.visible: hovered || activeFocus
                             onClicked: backend.toggleFollowTeam(modelData)
                         }
                     }

@@ -18,13 +18,16 @@ Item {
     property string detailError: ""
 
     property var table: ({ name: "", rows: [] })
-    property string tableLeagueId: "47"
+    property string tableLeagueId: ""
     property bool tableLoading: false
     property string tableError: ""
 
     property var searchResults: []
     property string searchQuery: ""
     property bool searchLoading: false
+    property var leagueSearchResults: []
+    property string leagueSearchQuery: ""
+    property bool leagueSearchLoading: false
 
     property var goalFlashIds: ({})
     property var _previousScores: null
@@ -34,14 +37,17 @@ Item {
 
     // Configuration bindings
     readonly property bool notify: plasmoid.configuration.notify !== false
-    readonly property string matchesFilter: plasmoid.configuration.matchesFilter || "featured"
     
     // Followed teams parsed from configuration string
     property var followedTeams: []
-    readonly property var featuredLeagueIds: Model.DEFAULT_FEATURED_IDS
+    property var selectedLeagues: []
+    readonly property var tableLeagues: Model.competitionChoices(selectedLeagues, followedTeams)
+    readonly property string preferredTableLeagueId: followedTeams.length && followedTeams[0].leagueId
+        ? String(followedTeams[0].leagueId)
+        : (selectedLeagues.length ? String(selectedLeagues[0].id) : "")
 
     readonly property var visibleLeagues: Model.pinFollowed(
-        Model.filterLeagues(leagues, featuredLeagueIds, followedTeams, matchesFilter),
+        Model.filterLeagues(leagues, selectedLeagues, followedTeams, "selected"),
         followedTeams
     )
     readonly property var followedMatches: Model.followingMatches(leagues, followedTeams)
@@ -49,6 +55,9 @@ Item {
     readonly property int liveCount: live.length
     readonly property var headline: Model.barHeadline(leagues, followedTeams)
     readonly property string barText: headline ? headline.text : "Kickoff"
+    readonly property string barTooltipText: headline && headline.count > 1
+        ? i18ncp("football match count", "%1 match is currently live", "%1 matches are currently live", headline.count)
+        : barText
     readonly property bool barLive: headline ? headline.live === true : false
     readonly property int pollMs: liveCount > 0 ? 20000 : 180000
 
@@ -70,6 +79,39 @@ Item {
 
     function saveFollowedTeams() {
         plasmoid.configuration.followedTeams = JSON.stringify(followedTeams);
+    }
+
+    function loadSelectedLeagues() {
+        try {
+            var raw = plasmoid.configuration.selectedLeagues;
+            selectedLeagues = raw ? Model.parseIdList(raw) : Model.parseIdList(Model.FEATURED_LEAGUES);
+        } catch (e) {
+            console.warn("Could not parse selectedLeagues config:", e);
+            selectedLeagues = Model.parseIdList(Model.FEATURED_LEAGUES);
+        }
+    }
+
+    function saveSelectedLeagues() {
+        plasmoid.configuration.selectedLeagues = JSON.stringify(selectedLeagues);
+        if (tableLeagues.length === 0) {
+            tableLeagueId = "";
+            table = ({ name: "", rows: [] });
+            tableError = "";
+            tableLoading = false;
+        } else if (!Model.isFollowed(tableLeagues, tableLeagueId)) {
+            loadTable(preferredTableLeagueId || tableLeagues[0].id);
+        }
+        refreshMatches();
+    }
+
+    function toggleLeague(league) {
+        if (!league || !league.id) return;
+        selectedLeagues = Model.toggleFollowed(selectedLeagues, league);
+        saveSelectedLeagues();
+    }
+
+    function isLeagueSelected(leagueId) {
+        return Model.isFollowed(selectedLeagues, leagueId);
     }
 
     function isTeamFollowed(teamId) {
@@ -244,7 +286,8 @@ Item {
     }
 
     function loadTable(leagueId) {
-        var id = String(leagueId || tableLeagueId || "47");
+        var id = String(leagueId || tableLeagueId || preferredTableLeagueId || "");
+        if (!id) return;
         tableLeagueId = id;
         tableLoading = true;
         tableError = "";
@@ -301,6 +344,48 @@ Item {
             return;
         }
         searchDebounce.restart();
+    }
+
+    function requestLeagueSearch(term) {
+        leagueSearchQuery = String(term || "");
+        if (leagueSearchQuery.trim().length < 2) {
+            leagueSearchResults = [];
+            leagueSearchLoading = false;
+            leagueSearchDebounce.stop();
+            return;
+        }
+        leagueSearchDebounce.restart();
+    }
+
+    function runLeagueSearch() {
+        var term = String(leagueSearchQuery || "").trim();
+        if (term.length < 2) {
+            leagueSearchResults = [];
+            leagueSearchLoading = false;
+            return;
+        }
+        leagueSearchLoading = true;
+
+        var xhr = new XMLHttpRequest();
+        xhr.timeout = 8000;
+        xhr.open("GET", Model.searchUrl(term));
+        xhr.setRequestHeader("User-Agent", Model.USER_AGENT);
+        xhr.setRequestHeader("Accept", "application/json");
+        xhr.ontimeout = function() {
+            leagueSearchResults = [];
+            leagueSearchLoading = false;
+        };
+        xhr.onerror = function() {
+            leagueSearchResults = [];
+            leagueSearchLoading = false;
+        };
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                leagueSearchLoading = false;
+                leagueSearchResults = xhr.status === 200 ? Model.parseLeagueSearch(xhr.responseText) : [];
+            }
+        };
+        xhr.send();
     }
 
     function runSearch() {
@@ -387,6 +472,12 @@ Item {
     }
 
     Timer {
+        id: leagueSearchDebounce
+        interval: 300
+        onTriggered: root.runLeagueSearch()
+    }
+
+    Timer {
         id: goalFlashTimer
         interval: 5000
         repeat: true
@@ -451,6 +542,7 @@ Item {
 
     Component.onCompleted: {
         loadFollowedTeams();
+        loadSelectedLeagues();
         startupTimer.start();
     }
 
@@ -458,6 +550,9 @@ Item {
         target: plasmoid.configuration
         function onFollowedTeamsChanged() {
             root.loadFollowedTeams();
+        }
+        function onSelectedLeaguesChanged() {
+            root.loadSelectedLeagues();
         }
     }
 }

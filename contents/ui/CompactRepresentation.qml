@@ -67,11 +67,11 @@ MouseArea {
         id: celebrationAnimation
         PropertyAction { target: ballIcon; property: "rotation"; value: 0 }
         ParallelAnimation {
-            NumberAnimation { target: ballIcon; property: "rotation"; from: 0; to: 720; duration: 900; easing.type: Easing.OutCubic }
-            NumberAnimation { target: shoutLabel; property: "scale"; from: 0.7; to: 1.1; duration: 300; easing.type: Easing.OutBack }
+            NumberAnimation { target: ballIcon; property: "rotation"; from: 0; to: 360; duration: 420; easing.type: Easing.OutCubic }
+            NumberAnimation { target: shoutLabel; property: "scale"; from: 0.9; to: 1.05; duration: 220; easing.type: Easing.OutCubic }
         }
-        PauseAnimation { duration: 2500 }
-        NumberAnimation { target: shoutLabel; property: "scale"; to: 1.0; duration: 200 }
+        PauseAnimation { duration: 1200 }
+        NumberAnimation { target: shoutLabel; property: "scale"; to: 1.0; duration: 120 }
         onFinished: root.playNextCelebration()
     }
 
@@ -94,7 +94,6 @@ MouseArea {
         KickoffIcon {
             id: ballIcon
             iconSize: vertical ? Math.min(root.width, root.height) - 4 : 16
-            iconColor: backend.barLive ? root.accent : root.foreground
             lively: backend.barLive && !celebrationAnimation.running
         }
 
@@ -119,20 +118,5 @@ MouseArea {
             verticalAlignment: Text.AlignVCenter
         }
 
-        // Tiny refresh spinner if refreshing
-        Kirigami.Icon {
-            visible: !root.vertical && backend.refreshing
-            source: "view-refresh"
-            width: 12
-            height: 12
-            Layout.alignment: Qt.AlignVCenter
-            RotationAnimator on rotation {
-                running: backend.refreshing
-                from: 0
-                to: 360
-                duration: 1000
-                loops: Animation.Infinite
-            }
-        }
     }
 }

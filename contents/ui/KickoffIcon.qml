@@ -1,24 +1,23 @@
 import QtQuick
-import "Model.js" as Model
 
-Text {
+Item {
     id: root
 
-    textFormat: Text.PlainText
     property real iconSize: 18
-    property color iconColor: "#ffffff"
-    property string emojiFamily: "Noto Color Emoji"
     property bool lively: false
     property real tilt: 0
 
-    text: Model.BALL_GLYPH
-    color: iconColor
-    font.family: emojiFamily
-    font.pixelSize: iconSize
-    horizontalAlignment: Text.AlignHCenter
-    verticalAlignment: Text.AlignVCenter
     width: iconSize
     height: iconSize
+
+    Image {
+        anchors.fill: parent
+        source: Qt.resolvedUrl("../images/kickoff-football.svg")
+        fillMode: Image.PreserveAspectFit
+        smooth: true
+        mipmap: true
+    }
+
     transformOrigin: Item.Center
     rotation: tilt
 
