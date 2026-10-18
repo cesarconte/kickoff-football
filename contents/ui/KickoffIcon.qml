@@ -12,7 +12,7 @@ Item {
 
     Image {
         anchors.fill: parent
-        source: Qt.resolvedUrl("../images/kickoff-football.svg")
+        source: Qt.resolvedUrl("../icon.svg")
         fillMode: Image.PreserveAspectFit
         smooth: true
         mipmap: true

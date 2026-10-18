@@ -3,7 +3,7 @@
         "Id": "org.kde.plasma.kickoff-football",
         "Name": "Kickoff",
         "Description": "Live football scores, tables, match events, and goal notifications",
-        "Icon": "applications-games",
+        "Icon": "/icon.svg",
         "Category": "Information",
         "License": "MIT",
         "Version": "1.0.0",
