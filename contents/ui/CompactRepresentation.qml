@@ -94,7 +94,6 @@ MouseArea {
         KickoffIcon {
             id: ballIcon
             iconSize: vertical ? Math.min(root.width, root.height) - 4 : 16
-            lively: backend.barLive && !celebrationAnimation.running
         }
 
         // Pill / Text label (only in horizontal panel)
@@ -113,7 +112,7 @@ MouseArea {
             visible: !root.vertical && root.shoutText === ""
             text: backend.barText
             color: root.foreground
-            font.bold: backend.barLive
+            font.bold: false
             font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
             verticalAlignment: Text.AlignVCenter
         }
