@@ -29,10 +29,13 @@ Item {
     readonly property color accent: Kirigami.Theme.highlightColor
     readonly property color urgent: Kirigami.Theme.negativeTextColor
 
-    implicitWidth: 420
+    readonly property bool compactFollowingEmpty: root.page === "list"
+        && root.tab === "following"
+        && backend.followedMatches.length === 0
+    implicitWidth: compactFollowingEmpty ? 360 : 420
     implicitHeight: 560
-    Layout.minimumWidth: 380
-    Layout.preferredWidth: 420
+    Layout.minimumWidth: compactFollowingEmpty ? 340 : 380
+    Layout.preferredWidth: compactFollowingEmpty ? 360 : 420
     Layout.minimumHeight: 480
     Layout.preferredHeight: 560
 
@@ -206,6 +209,9 @@ Item {
             Layout.fillHeight: true
             visible: root.page === "list"
             clip: true
+            contentWidth: availableWidth
+            QQC2.ScrollBar.horizontal.policy: QQC2.ScrollBar.AlwaysOff
+            QQC2.ScrollBar.vertical.policy: QQC2.ScrollBar.AsNeeded
 
             ColumnLayout {
                 width: listScrollView.availableWidth
@@ -861,7 +867,9 @@ Item {
                 Repeater {
                     model: backend.selectedLeagues
                     delegate: RowLayout {
+                        id: selectedLeagueRow
                         required property var modelData
+                        required property int index
                         Layout.fillWidth: true
                         spacing: 8
 
@@ -872,6 +880,28 @@ Item {
                             text: modelData.name
                             color: root.foreground
                             elide: Text.ElideRight
+                        }
+
+                        PlasmaComponents3.ToolButton {
+                            icon.name: "go-up"
+                            text: i18n("Move up")
+                            display: PlasmaComponents3.AbstractButton.IconOnly
+                            enabled: selectedLeagueRow.index > 0
+                            Accessible.name: text
+                            QQC2.ToolTip.text: text
+                            QQC2.ToolTip.visible: hovered || activeFocus
+                            onClicked: backend.moveSelectedLeague(selectedLeagueRow.index, -1)
+                        }
+
+                        PlasmaComponents3.ToolButton {
+                            icon.name: "go-down"
+                            text: i18n("Move down")
+                            display: PlasmaComponents3.AbstractButton.IconOnly
+                            enabled: selectedLeagueRow.index < backend.selectedLeagues.length - 1
+                            Accessible.name: text
+                            QQC2.ToolTip.text: text
+                            QQC2.ToolTip.visible: hovered || activeFocus
+                            onClicked: backend.moveSelectedLeague(selectedLeagueRow.index, 1)
                         }
 
                         PlasmaComponents3.ToolButton {

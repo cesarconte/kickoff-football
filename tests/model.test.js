@@ -70,3 +70,13 @@ test("competition navigation wraps in either direction and recovers a missing se
   assert.equal(Model.adjacentCompetition(choices, "missing", -1).id, "87");
   assert.equal(Model.adjacentCompetition([{ id: "47" }], "47", 1), null);
 });
+
+test("selected competitions can be reordered without mutating the original list", () => {
+  const choices = [{ id: "47" }, { id: "87" }, { id: "9907" }];
+
+  assert.deepEqual(Model.moveItem(choices, 1, -1), [{ id: "87" }, { id: "47" }, { id: "9907" }]);
+  assert.deepEqual(Model.moveItem(choices, 1, 1), [{ id: "47" }, { id: "9907" }, { id: "87" }]);
+  assert.deepEqual(Model.moveItem(choices, 0, -1), choices);
+  assert.deepEqual(Model.moveItem(choices, 2, 1), choices);
+  assert.deepEqual(choices, [{ id: "47" }, { id: "87" }, { id: "9907" }]);
+});

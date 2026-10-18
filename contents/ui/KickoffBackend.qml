@@ -110,6 +110,14 @@ Item {
         saveSelectedLeagues();
     }
 
+    function moveSelectedLeague(index, direction) {
+        var step = Number(direction) < 0 ? -1 : 1;
+        var target = Number(index) + step;
+        if (target < 0 || target >= selectedLeagues.length) return;
+        selectedLeagues = Model.moveItem(selectedLeagues, index, step);
+        plasmoid.configuration.selectedLeagues = JSON.stringify(selectedLeagues);
+    }
+
     function isLeagueSelected(leagueId) {
         return Model.isFollowed(selectedLeagues, leagueId);
     }
