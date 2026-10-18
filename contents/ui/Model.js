@@ -818,6 +818,18 @@ function adjacentCompetition(choices, currentId, direction) {
   return list[(current + step + list.length) % list.length]
 }
 
+function moveItem(items, index, direction) {
+  var list = Array.isArray(items) ? items.slice() : []
+  var from = Number(index)
+  var step = Number(direction) < 0 ? -1 : 1
+  var to = from + step
+  if (!isFinite(from) || Math.floor(from) !== from || from < 0 || from >= list.length || to < 0 || to >= list.length) return list
+  var item = list[from]
+  list[from] = list[to]
+  list[to] = item
+  return list
+}
+
 function parseTable(raw) {
   var parsed = parseJson(raw, FEED_LIMITS.league)
   if (!parsed.ok || !parsed.value) return { ok: false, error: parsed.error || "Unexpected table payload", name: "", rows: [] }
@@ -1139,6 +1151,7 @@ if (typeof module !== "undefined") {
     parseLeagueSearch: parseLeagueSearch,
     competitionChoices: competitionChoices,
     adjacentCompetition: adjacentCompetition,
+    moveItem: moveItem,
     parseTable: parseTable,
     parseMatchDetails: parseMatchDetails,
     normalizeEvent: normalizeEvent,
