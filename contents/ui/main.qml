@@ -4,7 +4,7 @@ import org.kde.plasma.plasmoid
 PlasmoidItem {
     id: root
 
-    Plasmoid.icon: Qt.resolvedUrl("../images/kickoff-football.svg")
+    Plasmoid.icon: Qt.resolvedUrl("../icon.svg")
     preferredRepresentation: compactRepresentation
     toolTipMainText: i18n("Kickoff Football")
     toolTipSubText: kickoffBackend.barTooltipText
