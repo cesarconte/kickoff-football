@@ -456,7 +456,8 @@ Item {
     function sendToast(headline, description) {
         var cleanHeadline = Model.notificationText(headline);
         var cleanDesc = Model.notificationText(description);
-        var cmd = "notify-send -a 'Kickoff' -i 'trophy-symbolic' '" + cleanHeadline.replace(/'/g, "'\\''") + "' '" + cleanDesc.replace(/'/g, "'\\''") + "'";
+        var iconUrl = Qt.resolvedUrl("../icon.svg").toString();
+        var cmd = "notify-send -a 'Kickoff' -i '" + iconUrl.replace(/'/g, "'\\''") + "' '" + cleanHeadline.replace(/'/g, "'\\''") + "' '" + cleanDesc.replace(/'/g, "'\\''") + "'";
         runner.connectSource(cmd);
     }
 
