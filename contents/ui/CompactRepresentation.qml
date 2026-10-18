@@ -112,7 +112,7 @@ MouseArea {
             id: normalLabel
             visible: !root.vertical && root.shoutText === ""
             text: backend.barText
-            color: backend.barLive ? root.accent : root.foreground
+            color: root.foreground
             font.bold: backend.barLive
             font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
             verticalAlignment: Text.AlignVCenter
