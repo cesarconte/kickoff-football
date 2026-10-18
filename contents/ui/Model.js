@@ -394,27 +394,22 @@ function involvedFollowed(match, followedIds) {
   return !!(followed[String(match.home && match.home.id)] || followed[String(match.away && match.away.id)])
 }
 
-function filterLeagues(leagues, featured, followed, mode) {
+function filterLeagues(leagues, selected, followed, mode) {
   var list = leagues || []
   if (String(mode || "featured") === "all") return list
-  var feat = indexIds(featuredIds(featured))
+  var selectedIds = indexIds(parseIdList(selected))
   var fol = indexIds(followed)
   var out = []
-  var liveFallback = []
   for (var i = 0; i < list.length; i++) {
     var lg = list[i]
-    var featuredHit = feat[String(lg.id)] || feat[String(lg.primaryId)]
+    var selectedHit = selectedIds[String(lg.id)] || selectedIds[String(lg.primaryId)]
     var followedHit = false
-    var liveHit = false
     var matches = lg.matches || []
     for (var j = 0; j < matches.length; j++) {
-      if (involvedFollowed(matches[j], followed)) followedHit = true
-      if (matches[j].state === "live") liveHit = true
+      if (involvedFollowed(matches[j], fol)) followedHit = true
     }
-    if (featuredHit || followedHit) out.push(lg)
-    else if (liveHit) liveFallback.push(lg)
+    if (selectedHit || followedHit) out.push(lg)
   }
-  if (out.length === 0) return liveFallback
   return out
 }
 
@@ -543,18 +538,22 @@ function barHeadline(leagues, followed) {
     return match.home.name + " " + compactScore(match) + " " + match.away.name + "  " + matchClock(match)
   }
 
+  function liveCountLine(count) {
+    return "LIVE · " + count + (count === 1 ? " match" : " matches")
+  }
+
   if (liveFollowed.length === 1)
     return { text: line(liveFollowed[0]), live: true, count: 1, matchId: liveFollowed[0].id }
   if (liveFollowed.length > 1)
-    return { text: "LIVE " + liveFollowed.length, live: true, count: liveFollowed.length, matchId: liveFollowed[0].id }
+    return { text: liveCountLine(liveFollowed.length), live: true, count: liveFollowed.length, matchId: liveFollowed[0].id }
   if (followedList.length === 0 && liveAll.length === 1)
     return { text: line(liveAll[0]), live: true, count: 1, matchId: liveAll[0].id }
   if (followedList.length === 0 && liveAll.length > 1)
-    return { text: "LIVE " + liveAll.length, live: true, count: liveAll.length, matchId: liveAll[0].id }
+    return { text: liveCountLine(liveAll.length), live: true, count: liveAll.length, matchId: liveAll[0].id }
   if (nextFollowed)
     return { text: nextFollowed.home.name + " vs " + nextFollowed.away.name + "  " + kickoffLabel(nextFollowed.utcTime), live: false, count: 0, matchId: nextFollowed.id }
   if (liveAll.length)
-    return { text: "LIVE " + liveAll.length, live: true, count: liveAll.length, matchId: liveAll[0].id }
+    return { text: liveCountLine(liveAll.length), live: true, count: liveAll.length, matchId: liveAll[0].id }
   return { text: APP_NAME, live: false, count: 0, matchId: "" }
 }
 
@@ -692,14 +691,7 @@ function demoFullTimeEvent(match, followed) {
   return events.length ? events[0] : null
 }
 
-var CELEBRATION_LINES = [
-  "GET IN!",
-  "GOAL!",
-  "BACK OF THE NET!",
-  "HAVE IT!",
-  "TOP CORNER!",
-  "GOOOAAAL!"
-]
+var CELEBRATION_LINES = ["GOAL!"]
 
 function celebrationLine(seed) {
   return pickLine(CELEBRATION_LINES, seed)
@@ -772,6 +764,58 @@ function parseSearch(raw) {
     }
   }
   return teams
+}
+
+function parseLeagueSearch(raw) {
+  var parsed = parseJson(raw, FEED_LIMITS.search)
+  if (!parsed.ok || !Array.isArray(parsed.value)) return []
+  var leagues = []
+  var seen = {}
+  for (var i = 0; i < parsed.value.length; i++) {
+    var suggestions = (parsed.value[i] && parsed.value[i].suggestions) || []
+    for (var j = 0; j < suggestions.length; j++) {
+      var suggestion = suggestions[j]
+      if (!suggestion || suggestion.type !== "league") continue
+      var id = String(suggestion.id || "")
+      if (!id || seen[id]) continue
+      seen[id] = true
+      leagues.push({
+        id: id,
+        name: String(suggestion.name || id),
+        ccode: String(suggestion.ccode || "")
+      })
+    }
+  }
+  return leagues
+}
+
+function competitionChoices(selected, followed) {
+  var choices = parseIdList(selected)
+  var seen = indexIds(choices)
+  var teams = parseIdList(followed)
+  for (var i = 0; i < teams.length; i++) {
+    var team = teams[i]
+    var id = String(team.leagueId || "")
+    if (!id || seen[id]) continue
+    seen[id] = true
+    choices.push({ id: id, name: String(team.leagueName || id), ccode: "" })
+  }
+  return choices
+}
+
+function adjacentCompetition(choices, currentId, direction) {
+  var list = arrayLike(choices) || []
+  if (list.length < 2) return null
+  var current = -1
+  for (var i = 0; i < list.length; i++) {
+    if (String(list[i].id) === String(currentId)) {
+      current = i
+      break
+    }
+  }
+  if (current < 0) current = Number(direction) > 0 ? list.length - 1 : 0
+  var step = Number(direction) < 0 ? -1 : 1
+  return list[(current + step + list.length) % list.length]
 }
 
 function parseTable(raw) {
@@ -1092,6 +1136,9 @@ if (typeof module !== "undefined") {
     goalCaption: goalCaption,
     demoGoalEvent: demoGoalEvent,
     parseSearch: parseSearch,
+    parseLeagueSearch: parseLeagueSearch,
+    competitionChoices: competitionChoices,
+    adjacentCompetition: adjacentCompetition,
     parseTable: parseTable,
     parseMatchDetails: parseMatchDetails,
     normalizeEvent: normalizeEvent,

@@ -8,14 +8,11 @@
     <entry name="notify" type="Bool">
       <default>true</default>
     </entry>
-    <entry name="matchesFilter" type="String">
-      <default>featured</default>
-    </entry>
     <entry name="followedTeams" type="String">
       <default>[]</default>
     </entry>
-    <entry name="featuredLeagueIds" type="String">
-      <default>[47,87,54,55,53,42,73,913550]</default>
+    <entry name="selectedLeagues" type="String">
+      <default>[{"id":"47","name":"Premier League"},{"id":"87","name":"LaLiga"},{"id":"54","name":"Bundesliga"},{"id":"55","name":"Serie A"},{"id":"53","name":"Ligue 1"},{"id":"42","name":"Champions League"},{"id":"73","name":"Europa League"},{"id":"130","name":"MLS"}]</default>
     </entry>
   </group>
 </kcfg>
