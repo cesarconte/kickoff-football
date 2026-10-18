@@ -25,9 +25,13 @@ Item {
     property var searchResults: []
     property string searchQuery: ""
     property bool searchLoading: false
+    property string searchError: ""
+    property int searchRequestGeneration: 0
     property var leagueSearchResults: []
     property string leagueSearchQuery: ""
     property bool leagueSearchLoading: false
+    property string leagueSearchError: ""
+    property int leagueSearchRequestGeneration: 0
 
     property var goalFlashIds: ({})
     property var _previousScores: null
@@ -345,23 +349,31 @@ Item {
 
     function requestSearch(term) {
         searchQuery = String(term || "");
+        searchRequestGeneration++;
+        searchError = "";
         if (searchQuery.trim().length < 2) {
             searchResults = [];
             searchLoading = false;
+            searchError = "";
             searchDebounce.stop();
             return;
         }
+        searchLoading = true;
         searchDebounce.restart();
     }
 
     function requestLeagueSearch(term) {
         leagueSearchQuery = String(term || "");
+        leagueSearchRequestGeneration++;
+        leagueSearchError = "";
         if (leagueSearchQuery.trim().length < 2) {
             leagueSearchResults = [];
             leagueSearchLoading = false;
+            leagueSearchError = "";
             leagueSearchDebounce.stop();
             return;
         }
+        leagueSearchLoading = true;
         leagueSearchDebounce.restart();
     }
 
@@ -370,9 +382,12 @@ Item {
         if (term.length < 2) {
             leagueSearchResults = [];
             leagueSearchLoading = false;
+            leagueSearchError = "";
             return;
         }
         leagueSearchLoading = true;
+        leagueSearchError = "";
+        var generation = leagueSearchRequestGeneration;
 
         var xhr = new XMLHttpRequest();
         xhr.timeout = 8000;
@@ -380,17 +395,31 @@ Item {
         xhr.setRequestHeader("User-Agent", Model.USER_AGENT);
         xhr.setRequestHeader("Accept", "application/json");
         xhr.ontimeout = function() {
+            if (generation !== root.leagueSearchRequestGeneration) return;
             leagueSearchResults = [];
             leagueSearchLoading = false;
+            leagueSearchError = "error";
         };
         xhr.onerror = function() {
+            if (generation !== root.leagueSearchRequestGeneration) return;
             leagueSearchResults = [];
             leagueSearchLoading = false;
+            leagueSearchError = "error";
         };
         xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.readyState === XMLHttpRequest.DONE && generation === root.leagueSearchRequestGeneration) {
                 leagueSearchLoading = false;
-                leagueSearchResults = xhr.status === 200 ? Model.parseLeagueSearch(xhr.responseText) : [];
+                if (xhr.status === 200) {
+                    try {
+                        leagueSearchResults = Model.parseLeagueSearch(xhr.responseText);
+                    } catch (err) {
+                        leagueSearchResults = [];
+                        leagueSearchError = "error";
+                    }
+                } else if (xhr.status !== 0) {
+                    leagueSearchResults = [];
+                    leagueSearchError = "error";
+                }
             }
         };
         xhr.send();
@@ -401,9 +430,12 @@ Item {
         if (term.length < 2) {
             searchResults = [];
             searchLoading = false;
+            searchError = "";
             return;
         }
         searchLoading = true;
+        searchError = "";
+        var generation = searchRequestGeneration;
 
         var url = Model.searchUrl(term);
         var xhr = new XMLHttpRequest();
@@ -413,26 +445,32 @@ Item {
         xhr.setRequestHeader("Accept", "application/json");
 
         xhr.ontimeout = function() {
+            if (generation !== root.searchRequestGeneration) return;
             searchResults = [];
             searchLoading = false;
+            searchError = "error";
         };
 
         xhr.onerror = function() {
+            if (generation !== root.searchRequestGeneration) return;
             searchResults = [];
             searchLoading = false;
+            searchError = "error";
         };
 
         xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.readyState === XMLHttpRequest.DONE && generation === root.searchRequestGeneration) {
                 searchLoading = false;
                 if (xhr.status === 200) {
                     try {
                         searchResults = Model.parseSearch(xhr.responseText);
                     } catch (err) {
                         searchResults = [];
+                        searchError = "error";
                     }
                 } else {
                     searchResults = [];
+                    searchError = "error";
                 }
             }
         };

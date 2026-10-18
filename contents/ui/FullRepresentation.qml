@@ -819,9 +819,10 @@ Item {
                     font.bold: true
                 }
 
-                PlasmaComponents3.TextField {
+                Kirigami.SearchField {
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
+                    autoAccept: false
                     placeholderText: i18n("Search competitions…")
                     onTextChanged: backend.requestLeagueSearch(text)
                 }
@@ -831,6 +832,53 @@ Item {
                     visible: backend.leagueSearchLoading
                     text: i18n("Searching leagues…")
                     color: root.dim
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    visible: backend.leagueSearchError !== ""
+                    spacing: Kirigami.Units.smallSpacing
+
+                    Kirigami.Icon {
+                        source: "dialog-warning"
+                        implicitWidth: Kirigami.Units.iconSizes.small
+                        implicitHeight: Kirigami.Units.iconSizes.small
+                        color: root.urgent
+                        Accessible.ignored: true
+                    }
+
+                    Text {
+                        textFormat: Text.PlainText
+                        Layout.fillWidth: true
+                        text: i18n("Could not search competitions. Try again.")
+                        color: root.urgent
+                        wrapMode: Text.WordWrap
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    visible: backend.leagueSearchQuery.trim().length >= 2
+                        && !backend.leagueSearchLoading
+                        && backend.leagueSearchError === ""
+                        && backend.leagueSearchResults.length === 0
+                    spacing: Kirigami.Units.smallSpacing
+
+                    Kirigami.Icon {
+                        source: "search"
+                        implicitWidth: Kirigami.Units.iconSizes.small
+                        implicitHeight: Kirigami.Units.iconSizes.small
+                        color: root.dim
+                        Accessible.ignored: true
+                    }
+
+                    Text {
+                        textFormat: Text.PlainText
+                        Layout.fillWidth: true
+                        text: i18n("No matching competitions")
+                        color: root.dim
+                        wrapMode: Text.WordWrap
+                    }
                 }
 
                 Repeater {
@@ -924,10 +972,11 @@ Item {
                     font.bold: true
                 }
 
-                PlasmaComponents3.TextField {
+                Kirigami.SearchField {
                     id: searchField
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
+                    autoAccept: false
                     placeholderText: i18n("Search clubs…")
                     onTextChanged: backend.requestSearch(text)
                 }
@@ -937,6 +986,53 @@ Item {
                     visible: backend.searchLoading
                     text: i18n("Searching clubs…")
                     color: root.dim
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    visible: backend.searchError !== ""
+                    spacing: Kirigami.Units.smallSpacing
+
+                    Kirigami.Icon {
+                        source: "dialog-warning"
+                        implicitWidth: Kirigami.Units.iconSizes.small
+                        implicitHeight: Kirigami.Units.iconSizes.small
+                        color: root.urgent
+                        Accessible.ignored: true
+                    }
+
+                    Text {
+                        textFormat: Text.PlainText
+                        Layout.fillWidth: true
+                        text: i18n("Could not search clubs. Try again.")
+                        color: root.urgent
+                        wrapMode: Text.WordWrap
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    visible: backend.searchQuery.trim().length >= 2
+                        && !backend.searchLoading
+                        && backend.searchError === ""
+                        && backend.searchResults.length === 0
+                    spacing: Kirigami.Units.smallSpacing
+
+                    Kirigami.Icon {
+                        source: "search"
+                        implicitWidth: Kirigami.Units.iconSizes.small
+                        implicitHeight: Kirigami.Units.iconSizes.small
+                        color: root.dim
+                        Accessible.ignored: true
+                    }
+
+                    Text {
+                        textFormat: Text.PlainText
+                        Layout.fillWidth: true
+                        text: i18n("No matching clubs")
+                        color: root.dim
+                        wrapMode: Text.WordWrap
+                    }
                 }
 
                 // Search Results
