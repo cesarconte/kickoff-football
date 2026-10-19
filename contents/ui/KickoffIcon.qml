@@ -11,7 +11,7 @@ Item {
 
     Kirigami.Icon {
         anchors.fill: parent
-        source: Qt.resolvedUrl("../images/football-symbolic.svg")
+        source: "games-highscores-symbolic"
         color: Kirigami.Theme.textColor
     }
 
