@@ -88,8 +88,11 @@ The business logic lives in `contents/ui/Model.js` as a plain, dependency-free C
 it can be unit tested with Node without a running Plasma session:
 
 ```bash
-node --test tests/
+node --test "tests/**/*.test.js"
 ```
+
+> Use the quoted glob: passing a bare directory (`node --test tests/`) is not supported on
+> Node 22 and 24, while the glob works on every supported version.
 
 The test suite covers the panel headline, live/followed detection, tooltip rendering, celebration
 copy, league search, competition ordering and filtering.
