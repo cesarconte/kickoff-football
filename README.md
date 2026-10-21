@@ -109,6 +109,58 @@ node --test "tests/**/*.test.js"
 The test suite covers the panel headline, live/followed detection, tooltip rendering, celebration
 copy, league search, competition ordering and filtering.
 
+### Static analysis
+
+The QML sources are checked with `qmllint`, which resolves the Plasma and Kirigami imports and
+reports type errors, unresolved properties and unused imports:
+
+```bash
+./scripts/lint.sh            # fails on errors, reports unused imports
+./scripts/lint.sh --verbose  # also prints every warning
+```
+
+It needs `qmllint` and the Plasma QML modules, which ship with `plasma-sdk` and `kde-sdk-meta` on
+Arch-based systems:
+
+```bash
+sudo pacman -S plasma-sdk kde-sdk-meta
+```
+
+The script deliberately ignores the `unqualified access` warnings: those are QML's normal
+parent-scope lookups, and the `i18n is not defined` hints are false positives, because Plasma
+injects `i18n()` into the root scope of every plasmoid.
+
+### Translation
+
+The Spanish catalogue is kept honest by a script that fails when a translatable string is missing
+or when the compiled `.mo` drifts away from its `.po` source:
+
+```bash
+./scripts/check-i18n.sh           # verify coverage and that the .mo is current
+./scripts/check-i18n.sh --write   # rebuild the .mo from the .po, then verify
+```
+
+It needs `gettext` (`msgfmt`) and Node.
+
+### Package validation
+
+`scripts/check-package.js` validates `metadata.json` and the package layout, so a broken package
+is caught before it reaches the panel:
+
+```bash
+node scripts/check-package.js
+```
+
+### Loading the plasmoid standalone
+
+`plasmawindowed`, from `plasma-sdk`, runs the plasmoid in its own window — handy for debugging a
+representation without reloading the whole panel:
+
+```bash
+plasmawindowed org.kde.plasma.kickoff-football
+plasmawindowed --smoke-test org.kde.plasma.kickoff-football   # load check, exits 0 on success
+```
+
 Project layout:
 
 ```
@@ -116,11 +168,13 @@ contents/
   config/      configuration UI (KCM)
   locale/es/   Spanish translation (.po / .mo)
   ui/          QML representations and the data backend
-scripts/       install/update script for the plasmoid
+scripts/       install, lint and translation scripts
 tests/         Node unit tests for Model.js
+LICENSE        MIT license text
 ```
 
-Every CI run executes the unit tests on each push and pull request to `main`.
+Every CI run executes the unit tests on each push and pull request to `main`, and validates the
+package and the translation catalogue.
 
 ## Credits
 
@@ -129,4 +183,5 @@ Every CI run executes the unit tests on each push and pull request to `main`.
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE). The original plugin by atsokolas is MIT licensed as well, and its
+copyright notice is preserved.

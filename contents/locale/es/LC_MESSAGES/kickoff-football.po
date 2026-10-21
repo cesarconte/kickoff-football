@@ -353,3 +353,7 @@ msgstr "Notificaciones:"
 
 msgid "Goal notifications (desktop alert when followed club scores)"
 msgstr "Notificaciones de goles (alerta de escritorio cuando un club seguido marca)"
+
+#: config.qml
+msgid "General"
+msgstr "General"

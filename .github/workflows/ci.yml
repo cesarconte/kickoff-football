@@ -33,3 +33,21 @@ jobs:
       # directory (`node --test tests/`) is not supported on Node 22 and 24.
       - name: Run tests
         run: node --test "tests/**/*.test.js"
+
+  package:
+    name: Package and translation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # gettext ships with the runner image, but make sure of it.
+      - name: Ensure gettext is available
+        run: command -v msgfmt || (sudo apt-get update && sudo apt-get install -y gettext)
+
+      - name: Validate the plasmoid package
+        run: node scripts/check-package.js
+
+      - name: Verify the Spanish translation
+        run: scripts/check-i18n.sh
