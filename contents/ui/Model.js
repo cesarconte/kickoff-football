@@ -65,16 +65,17 @@ function shiftDateKey(key, days) {
   return dateKeyFromDate(d)
 }
 
-function dateHeading(key, todayKey) {
+function dateHeading(key, todayKey, tr) {
   var current = String(key || "")
   var today = String(todayKey || "")
-  if (current && current === today) return "Today"
-  if (current && current === shiftDateKey(today, -1)) return "Yesterday"
-  if (current && current === shiftDateKey(today, 1)) return "Tomorrow"
+  var t = tr || {}
+  if (current && current === today) return t.today || "Today"
+  if (current && current === shiftDateKey(today, -1)) return t.yesterday || "Yesterday"
+  if (current && current === shiftDateKey(today, 1)) return t.tomorrow || "Tomorrow"
   var d = parseDateKey(current)
   if (!d) return current
-  var days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-  var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  var days = t.days || ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  var months = t.months || ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
   return days[d.getDay()] + " " + d.getDate() + " " + months[d.getMonth()]
 }
 
@@ -1021,6 +1022,38 @@ function topStats(data) {
     })
   }
   return out
+}
+
+// Translate a stat title from API English to localized text using a map
+function translateStat(title, tr) {
+  if (!tr || !title) return title
+  var key = String(title).toLowerCase().trim()
+  return tr[key] || title
+}
+
+// Translate event label parts (card types, OG, HT, FT) using a map
+function translateEventLabel(event, tr) {
+  if (!event || !tr) return event.label || ""
+  var e = event
+  var label = ""
+  if (e.type === "Goal") {
+    label = String(e.label || "")
+    if (label.indexOf("OG") >= 0) label = label.replace("OG", tr["og"] || "OG")
+  } else if (e.type === "Card") {
+    // Re-build card label: "Yellow · Name" → "Amarilla · Name"
+    var parts = String(e.label || "").split(" · ")
+    var cardName = parts[0] || ""
+    var playerName = parts.slice(1).join(" · ")
+    var cardKey = cardName.toLowerCase().trim()
+    var translatedCard = tr[cardKey] || cardName
+    label = translatedCard + " · " + playerName
+  } else if (e.type === "Half") {
+    var halfKey = String(e.label || "").toLowerCase().trim()
+    label = tr[halfKey] || e.label || ""
+  } else {
+    label = e.label || ""
+  }
+  return label
 }
 
 function parseMatchDetails(raw) {

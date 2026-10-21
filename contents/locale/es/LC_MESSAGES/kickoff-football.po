@@ -1,0 +1,355 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Kickoff Football 1.0\n"
+"POT-Creation-Date: 2026-10-21 16:30:00+0200\n"
+"PO-Revision-Date: 2026-10-21 16:30:00+0200\n"
+"Last-Translator: César\n"
+"Language-Team: Spanish\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: main.qml
+msgid "Kickoff Football"
+msgstr "Kickoff Fútbol"
+
+#: FullRepresentation.qml - navigation
+msgid "Back"
+msgstr "Atrás"
+
+msgid "Match Detail"
+msgstr "Detalle del partido"
+
+msgid "Kickoff Settings"
+msgstr "Ajustes de Kickoff"
+
+msgid "Close settings"
+msgstr "Cerrar ajustes"
+
+msgid "Settings"
+msgstr "Ajustes"
+
+msgid "Refresh"
+msgstr "Actualizar"
+
+#: FullRepresentation.qml - date selector
+msgid "Previous day"
+msgstr "Día anterior"
+
+msgid "Next day"
+msgstr "Día siguiente"
+
+msgid "Today"
+msgstr "Hoy"
+
+msgid "Yesterday"
+msgstr "Ayer"
+
+msgid "Tomorrow"
+msgstr "Mañana"
+
+#: Date - days of week
+msgid "Sun"
+msgstr "Dom"
+
+msgid "Mon"
+msgstr "Lun"
+
+msgid "Tue"
+msgstr "Mar"
+
+msgid "Wed"
+msgstr "Mié"
+
+msgid "Thu"
+msgstr "Jue"
+
+msgid "Fri"
+msgstr "Vie"
+
+msgid "Sat"
+msgstr "Sáb"
+
+#: Date - months
+msgid "Jan"
+msgstr "Ene"
+
+msgid "Feb"
+msgstr "Feb"
+
+msgid "Mar"
+msgstr "Mar"
+
+msgid "Apr"
+msgstr "Abr"
+
+msgid "May"
+msgstr "May"
+
+msgid "Jun"
+msgstr "Jun"
+
+msgid "Jul"
+msgstr "Jul"
+
+msgid "Aug"
+msgstr "Ago"
+
+msgid "Sep"
+msgstr "Sep"
+
+msgid "Oct"
+msgstr "Oct"
+
+msgid "Nov"
+msgstr "Nov"
+
+msgid "Dec"
+msgstr "Dic"
+
+#: FullRepresentation.qml - tabs
+msgid "MATCHES"
+msgstr "PARTIDOS"
+
+msgid "FOLLOWING"
+msgstr "SIGUIENDO"
+
+msgid "TABLE"
+msgstr "TABLA"
+
+#: FullRepresentation.qml - matches tab
+msgid "Loading matches…"
+msgstr "Cargando partidos…"
+
+msgid "No matches scheduled for this date."
+msgstr "No hay partidos programados para esta fecha."
+
+#: FullRepresentation.qml - following tab
+msgid "Follow your favorite clubs in Settings to pin their matches here and receive goal notifications."
+msgstr "Sigue tus clubes favoritos en Ajustes para fijar sus partidos aquí y recibir notificaciones de goles."
+
+msgid "None of your followed clubs play on this date."
+msgstr "Ninguno de tus clubes seguidos juega en esta fecha."
+
+#: FullRepresentation.qml - table/standings tab
+msgid "Select leagues in Settings to view their standings."
+msgstr "Selecciona ligas en Ajustes para ver sus clasificaciones."
+
+msgid "Previous competition"
+msgstr "Competición anterior"
+
+msgid "Next competition"
+msgstr "Siguiente competición"
+
+msgid "Loading standings…"
+msgstr "Cargando clasificación…"
+
+msgid "CLUB"
+msgstr "CLUB"
+
+#: FullRepresentation.qml - match detail
+msgid "Loading match details…"
+msgstr "Cargando detalles del partido…"
+
+msgid "Follow Home"
+msgstr "Seguir local"
+
+msgid "Following Home"
+msgstr "Siguiendo local"
+
+msgid "Follow Away"
+msgstr "Seguir visitante"
+
+msgid "Following Away"
+msgstr "Siguiendo visitante"
+
+msgid "Match Events"
+msgstr "Eventos del partido"
+
+msgid "Statistics"
+msgstr "Estadísticas"
+
+msgid "Open Match in FotMob"
+msgstr "Abrir partido en FotMob"
+
+#: FullRepresentation.qml - match statistics (API data translations)
+msgid "Ball possession"
+msgstr "Posesión del balón"
+
+msgid "Expected goals (xG)"
+msgstr "Goles esperados (xG)"
+
+msgid "Total shots"
+msgstr "Tiros totales"
+
+msgid "Shots on target"
+msgstr "Tiros a puerta"
+
+msgid "Shots off target"
+msgstr "Tiros fuera"
+
+msgid "Blocked shots"
+msgstr "Tiros bloqueados"
+
+msgid "Big chances"
+msgstr "Ocasiones claras"
+
+msgid "Big chances missed"
+msgstr "Ocasiones claras falladas"
+
+msgid "Accurate passes"
+msgstr "Pases precisos"
+
+msgid "Fouls committed"
+msgstr "Faltas cometidas"
+
+msgid "Corners"
+msgstr "Córners"
+
+msgid "Offsides"
+msgstr "Fueras de juego"
+
+msgid "Touches in opposition box"
+msgstr "Toques en área rival"
+
+msgid "Goalkeeper saves"
+msgstr "Paradas del portero"
+
+msgid "Yellow cards"
+msgstr "Tarjetas amarillas"
+
+msgid "Red cards"
+msgstr "Tarjetas rojas"
+
+msgid "Crosses"
+msgstr "Centros"
+
+msgid "Tackles won"
+msgstr "Entradas ganadas"
+
+msgid "Interceptions"
+msgstr "Intercepciones"
+
+msgid "Clearances"
+msgstr "Despejes"
+
+msgid "Duels won"
+msgstr "Duelos ganados"
+
+msgid "Ground duels won"
+msgstr "Duelos terrestres ganados"
+
+msgid "Aerial duels won"
+msgstr "Duelos aéreos ganados"
+
+msgid "Passes into final third"
+msgstr "Pases al último tercio"
+
+msgid "Long balls"
+msgstr "Balones largos"
+
+msgid "Hit woodwork"
+msgstr "Disparos al palo"
+
+msgid "Counter attacks"
+msgstr "Contraataques"
+
+msgid "xG first half"
+msgstr "xG primera parte"
+
+msgid "xG second half"
+msgstr "xG segunda parte"
+
+#: FullRepresentation.qml - match events (card/half translations)
+msgid "Yellow"
+msgstr "Amarilla"
+
+msgid "Red"
+msgstr "Roja"
+
+msgid "Yellow-Red"
+msgstr "Doble amarilla"
+
+msgid "OG"
+msgstr "PP"
+
+msgid "HT"
+msgstr "MT"
+
+msgid "FT"
+msgstr "FP"
+
+#: FullRepresentation.qml - settings page
+msgid "Goal notifications"
+msgstr "Notificaciones de goles"
+
+msgid "Show a desktop notification when a followed club scores"
+msgstr "Mostrar una notificación de escritorio cuando un club seguido marca un gol"
+
+msgid "Competitions"
+msgstr "Competiciones"
+
+msgid "Search competitions…"
+msgstr "Buscar competiciones…"
+
+msgid "Searching leagues…"
+msgstr "Buscando ligas…"
+
+msgid "Could not search competitions. Try again."
+msgstr "No se pudieron buscar competiciones. Inténtalo de nuevo."
+
+msgid "No matching competitions"
+msgstr "No se encontraron competiciones"
+
+msgid "Selected"
+msgstr "Seleccionada"
+
+msgid "Add"
+msgstr "Añadir"
+
+#, kde-format
+msgid "Selected competitions (%1)"
+msgstr "Competiciones seleccionadas (%1)"
+
+msgid "Move up"
+msgstr "Subir"
+
+msgid "Move down"
+msgstr "Bajar"
+
+msgid "Remove"
+msgstr "Eliminar"
+
+msgid "Follow clubs"
+msgstr "Seguir clubes"
+
+msgid "Search clubs…"
+msgstr "Buscar clubes…"
+
+msgid "Searching clubs…"
+msgstr "Buscando clubes…"
+
+msgid "Could not search clubs. Try again."
+msgstr "No se pudieron buscar clubes. Inténtalo de nuevo."
+
+msgid "No matching clubs"
+msgstr "No se encontraron clubes"
+
+msgid "Following"
+msgstr "Siguiendo"
+
+msgid "Follow"
+msgstr "Seguir"
+
+#, kde-format
+msgid "Followed clubs (%1)"
+msgstr "Clubes seguidos (%1)"
+
+#: ConfigGeneral.qml
+msgid "Notifications:"
+msgstr "Notificaciones:"
+
+msgid "Goal notifications (desktop alert when followed club scores)"
+msgstr "Notificaciones de goles (alerta de escritorio cuando un club seguido marca)"

@@ -29,6 +29,49 @@ Item {
     readonly property color accent: Kirigami.Theme.highlightColor
     readonly property color urgent: Kirigami.Theme.negativeTextColor
 
+    // Translation maps for API data (FotMob returns English)
+    readonly property var statTranslations: ({
+        "ball possession": i18n("Ball possession"),
+        "expected goals (xg)": i18n("Expected goals (xG)"),
+        "total shots": i18n("Total shots"),
+        "shots on target": i18n("Shots on target"),
+        "shots off target": i18n("Shots off target"),
+        "blocked shots": i18n("Blocked shots"),
+        "big chances": i18n("Big chances"),
+        "big chances missed": i18n("Big chances missed"),
+        "accurate passes": i18n("Accurate passes"),
+        "fouls committed": i18n("Fouls committed"),
+        "corners": i18n("Corners"),
+        "offsides": i18n("Offsides"),
+        "touches in opposition box": i18n("Touches in opposition box"),
+        "goalkeeper saves": i18n("Goalkeeper saves"),
+        "yellow cards": i18n("Yellow cards"),
+        "red cards": i18n("Red cards"),
+        "crosses": i18n("Crosses"),
+        "tackles won": i18n("Tackles won"),
+        "interceptions": i18n("Interceptions"),
+        "clearances": i18n("Clearances"),
+        "duels won": i18n("Duels won"),
+        "ground duels won": i18n("Ground duels won"),
+        "aerial duels won": i18n("Aerial duels won"),
+        "passes into final third": i18n("Passes into final third"),
+        "long balls": i18n("Long balls"),
+        "hit woodwork": i18n("Hit woodwork"),
+        "counter attacks": i18n("Counter attacks"),
+        "xg first half": i18n("xG first half"),
+        "xg second half": i18n("xG second half")
+    })
+
+    readonly property var eventTranslations: ({
+        "yellow": i18n("Yellow"),
+        "red": i18n("Red"),
+        "yellowred": i18n("Yellow-Red"),
+        "og": i18n("OG"),
+        "ht": i18n("HT"),
+        "ft": i18n("FT")
+    })
+
+
     readonly property bool compactFollowingEmpty: root.page === "list"
         && root.tab === "following"
         && backend.followedMatches.length === 0
@@ -161,7 +204,13 @@ Item {
 
                     PlasmaComponents3.ToolButton {
                         anchors.centerIn: parent
-                        text: Model.dateHeading(backend.dateKey, backend.todayKey)
+                        text: Model.dateHeading(backend.dateKey, backend.todayKey, {
+                            today: i18n("Today"),
+                            yesterday: i18n("Yesterday"),
+                            tomorrow: i18n("Tomorrow"),
+                            days: [i18n("Sun"), i18n("Mon"), i18n("Tue"), i18n("Wed"), i18n("Thu"), i18n("Fri"), i18n("Sat")],
+                            months: [i18n("Jan"), i18n("Feb"), i18n("Mar"), i18n("Apr"), i18n("May"), i18n("Jun"), i18n("Jul"), i18n("Aug"), i18n("Sep"), i18n("Oct"), i18n("Nov"), i18n("Dec")]
+                        })
                         onClicked: backend.jumpToday()
                     }
                 }
@@ -715,7 +764,7 @@ Item {
                             Text {
                                 textFormat: Text.PlainText
                                 Layout.fillWidth: true
-                                text: (modelData.type === "Goal" ? "⚽ " : (modelData.card === "Yellow" ? "🟨 " : (modelData.card === "Red" ? "🟥 " : ""))) + modelData.label
+                                text: (modelData.type === "Goal" ? "⚽ " : (modelData.card === "Yellow" ? "🟨 " : (modelData.card === "Red" ? "🟥 " : ""))) + Model.translateEventLabel(modelData, root.eventTranslations)
                                 color: modelData.isHome ? root.foreground : root.dim
                                 wrapMode: Text.WordWrap
                             }
@@ -745,17 +794,18 @@ Item {
 
                             Text {
                                 textFormat: Text.PlainText
-                                Layout.preferredWidth: 50
+                                Layout.preferredWidth: 72
                                 text: String(modelData.home)
                                 color: root.foreground
                                 font.bold: true
                                 horizontalAlignment: Text.AlignRight
+                                elide: Text.ElideRight
                             }
 
                             Text {
                                 textFormat: Text.PlainText
                                 Layout.fillWidth: true
-                                text: modelData.title
+                                text: Model.translateStat(modelData.title, root.statTranslations)
                                 color: root.dim
                                 horizontalAlignment: Text.AlignHCenter
                                 elide: Text.ElideRight
@@ -763,10 +813,11 @@ Item {
 
                             Text {
                                 textFormat: Text.PlainText
-                                Layout.preferredWidth: 50
+                                Layout.preferredWidth: 72
                                 text: String(modelData.away)
                                 color: root.foreground
                                 font.bold: true
+                                elide: Text.ElideRight
                             }
                         }
                     }
