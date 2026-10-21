@@ -13,7 +13,6 @@ KCM.SimpleKCM {
     property string cfg_selectedLeagues: ""
     property string cfg_followedTeams: ""
 
-    // In-memory state for followed clubs (simple array is fine here)
     property var followedTeams: []
 
     // League search state
@@ -30,7 +29,7 @@ KCM.SimpleKCM {
     property string clubSearchError: ""
     property int clubSearchGeneration: 0
 
-    // ── ListModel that backs the drag-reorderable competitions list ──
+    // ── ListModel backing the drag-reorderable competitions list ──
     ListModel { id: selectedLeaguesModel }
 
     // ── Helpers ──────────────────────────────────────────────
@@ -186,30 +185,43 @@ KCM.SimpleKCM {
     }
 
     // ── UI ───────────────────────────────────────────────────
-    Kirigami.FormLayout {
+    // We use a ColumnLayout as root content so the drag-capable ListView
+    // can live outside FormLayout (FormLayout does not handle dynamic
+    // height correctly for interactive ListViews with drag handles).
+    ColumnLayout {
+        width: parent ? parent.width : undefined
+        spacing: Kirigami.Units.largeSpacing
 
         // ── Notifications ─────────────────────────────────────
-        QQC2.CheckBox {
-            id: notifyCheckBox
-            Kirigami.FormData.label: i18n("Notifications:")
-            text: i18n("Goal notifications (desktop alert when a followed club scores)")
+        Kirigami.FormLayout {
+            Layout.fillWidth: true
+
+            QQC2.CheckBox {
+                id: notifyCheckBox
+                Kirigami.FormData.label: i18n("Notifications:")
+                text: i18n("Goal notifications (desktop alert when a followed club scores)")
+            }
         }
 
         // ── Competitions section ──────────────────────────────
-        Kirigami.Separator {
-            Kirigami.FormData.isSection: true
-            Kirigami.FormData.label: i18n("Competitions")
+        Kirigami.Separator { Layout.fillWidth: true }
+
+        QQC2.Label {
+            Layout.fillWidth: true
+            text: i18n("Competitions")
+            font.bold: true
         }
 
+        // League search
         Kirigami.SearchField {
             id: leagueSearchField
-            Kirigami.FormData.label: i18n("Search:")
             Layout.fillWidth: true
             autoAccept: false
             placeholderText: i18n("Search competitions...")
             onTextChanged: root.requestLeagueSearch(text)
         }
 
+        // Search results feedback
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Kirigami.Units.smallSpacing
@@ -248,35 +260,48 @@ KCM.SimpleKCM {
             }
         }
 
-        // Selected competitions with drag-to-reorder
-        ColumnLayout {
+        // Selected competitions header
+        QQC2.Label {
             Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
+            text: i18n("Selected competitions (%1)", selectedLeaguesModel.count)
+            font.bold: true
+            color: Kirigami.Theme.disabledTextColor
+        }
 
-            QQC2.Label {
-                text: i18n("Selected competitions (%1)", selectedLeaguesModel.count)
-                font.bold: true
-                color: Kirigami.Theme.disabledTextColor
+        // ── Drag-reorderable ListView ─────────────────────────
+        // ListView is interactive (never interactive:false) so ListItemDragHandle
+        // can track drag coordinates and auto-scroll properly.
+        ListView {
+            id: leaguesListView
+            Layout.fillWidth: true
+            implicitHeight: contentHeight
+            clip: true
+            model: selectedLeaguesModel
+            boundsBehavior: Flickable.StopAtBounds
+
+            // Smooth animation when surrounding items shift during drag
+            moveDisplaced: Transition {
+                YAnimator {
+                    duration: Kirigami.Units.longDuration
+                    easing.type: Easing.InOutQuad
+                }
             }
 
-            ListView {
-                id: leaguesListView
-                Layout.fillWidth: true
-                implicitHeight: contentHeight
-                interactive: false
-                model: selectedLeaguesModel
-                clip: false
+            // Note: ListItemDragHandle requires the dragged item (leagueItem)
+            // to be a CHILD of the ListView's direct delegate (listItemContainer),
+            // not the direct delegate itself, so that reparenting during drag works.
+            delegate: Item {
+                id: listItemContainer
+                required property string leagueId
+                required property string name
+                required property int index
 
-                moveDisplaced: Transition {
-                    YAnimator {
-                        duration: Kirigami.Units.longDuration
-                        easing.type: Easing.InOutQuad
-                    }
-                }
+                width: leaguesListView.width
+                height: leagueItem.implicitHeight
 
-                delegate: QQC2.ItemDelegate {
+                QQC2.ItemDelegate {
                     id: leagueItem
-                    width: leaguesListView.width
+                    width: listItemContainer.width
                     highlighted: dragHandle.dragActive
 
                     contentItem: RowLayout {
@@ -288,16 +313,20 @@ KCM.SimpleKCM {
                             listView: leaguesListView
                             onMoveRequested: (oldIndex, newIndex) => {
                                 selectedLeaguesModel.move(oldIndex, newIndex, 1);
+                            }
+                            onDropped: {
                                 root.saveSelectedLeagues();
                             }
                         }
 
                         QQC2.Label {
                             Layout.fillWidth: true
-                            text: model.name
+                            text: listItemContainer.name
                             elide: Text.ElideRight
                             opacity: dragHandle.dragActive ? 0.6 : 1.0
-                            Behavior on opacity { NumberAnimation { duration: Kirigami.Units.shortDuration } }
+                            Behavior on opacity {
+                                NumberAnimation { duration: Kirigami.Units.shortDuration }
+                            }
                         }
 
                         QQC2.ToolButton {
@@ -307,7 +336,7 @@ KCM.SimpleKCM {
                             QQC2.ToolTip.text: text
                             QQC2.ToolTip.visible: hovered || activeFocus
                             onClicked: {
-                                selectedLeaguesModel.remove(model.index);
+                                selectedLeaguesModel.remove(listItemContainer.index);
                                 root.saveSelectedLeagues();
                             }
                         }
@@ -317,14 +346,16 @@ KCM.SimpleKCM {
         }
 
         // ── Follow clubs section ──────────────────────────────
-        Kirigami.Separator {
-            Kirigami.FormData.isSection: true
-            Kirigami.FormData.label: i18n("Follow clubs")
+        Kirigami.Separator { Layout.fillWidth: true }
+
+        QQC2.Label {
+            Layout.fillWidth: true
+            text: i18n("Follow clubs")
+            font.bold: true
         }
 
         Kirigami.SearchField {
             id: clubSearchField
-            Kirigami.FormData.label: i18n("Search:")
             Layout.fillWidth: true
             autoAccept: false
             placeholderText: i18n("Search clubs...")
@@ -384,48 +415,48 @@ KCM.SimpleKCM {
             }
         }
 
-        ColumnLayout {
+        // Followed clubs list
+        QQC2.Label {
             Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
+            text: i18n("Followed clubs (%1)", root.followedTeams.length)
+            font.bold: true
+            color: Kirigami.Theme.disabledTextColor
+        }
 
-            QQC2.Label {
-                text: i18n("Followed clubs (%1)", root.followedTeams.length)
-                font.bold: true
-                color: Kirigami.Theme.disabledTextColor
-            }
+        QQC2.Label {
+            visible: root.followedTeams.length === 0
+            text: i18n("Search for clubs above to follow them and receive goal notifications.")
+            wrapMode: Text.WordWrap
+            color: Kirigami.Theme.disabledTextColor
+            Layout.fillWidth: true
+        }
 
-            QQC2.Label {
-                visible: root.followedTeams.length === 0
-                text: i18n("Search for clubs above to follow them and receive goal notifications.")
-                wrapMode: Text.WordWrap
-                color: Kirigami.Theme.disabledTextColor
+        Repeater {
+            model: root.followedTeams
+            delegate: RowLayout {
+                required property var modelData
                 Layout.fillWidth: true
-            }
-
-            Repeater {
-                model: root.followedTeams
-                delegate: RowLayout {
-                    required property var modelData
-                    Layout.fillWidth: true
-                    spacing: Kirigami.Units.smallSpacing
-                    Image {
-                        width: 18; height: 18
-                        source: Model.teamLogoUrl(modelData.id)
-                        sourceSize.width: 48; sourceSize.height: 48
-                        fillMode: Image.PreserveAspectFit
-                        asynchronous: true
-                    }
-                    QQC2.Label { Layout.fillWidth: true; text: modelData.name; elide: Text.ElideRight }
-                    QQC2.ToolButton {
-                        icon.name: "list-remove"
-                        text: i18n("Unfollow")
-                        display: QQC2.AbstractButton.IconOnly
-                        QQC2.ToolTip.text: text
-                        QQC2.ToolTip.visible: hovered || activeFocus
-                        onClicked: root.toggleFollowTeam(modelData)
-                    }
+                spacing: Kirigami.Units.smallSpacing
+                Image {
+                    width: 18; height: 18
+                    source: Model.teamLogoUrl(modelData.id)
+                    sourceSize.width: 48; sourceSize.height: 48
+                    fillMode: Image.PreserveAspectFit
+                    asynchronous: true
+                }
+                QQC2.Label { Layout.fillWidth: true; text: modelData.name; elide: Text.ElideRight }
+                QQC2.ToolButton {
+                    icon.name: "list-remove"
+                    text: i18n("Unfollow")
+                    display: QQC2.AbstractButton.IconOnly
+                    QQC2.ToolTip.text: text
+                    QQC2.ToolTip.visible: hovered || activeFocus
+                    onClicked: root.toggleFollowTeam(modelData)
                 }
             }
         }
+
+        // Bottom padding
+        Item { implicitHeight: Kirigami.Units.largeSpacing }
     }
 }
