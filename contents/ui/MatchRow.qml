@@ -13,7 +13,7 @@ Item {
 
     activeFocusOnTab: true
     Accessible.role: Accessible.Button
-    Accessible.name: match ? match.home.name + " " + Model.compactScore(match) + " " + match.away.name + ", " + matchClock : ""
+    Accessible.name: match ? match.home.name + " " + Model.compactScore(match) + " " + match.away.name + ", " + root.clock : ""
     Keys.onReturnPressed: root.clicked()
     Keys.onEnterPressed: root.clicked()
     Keys.onSpacePressed: root.clicked()

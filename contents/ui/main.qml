@@ -27,6 +27,11 @@ PlasmoidItem {
     onExpandedChanged: {
         if (root.expanded) {
             kickoffBackend.refreshMatches();
+            if (kickoffBackend.matchDetail && kickoffBackend.matchDetail.id) {
+                kickoffBackend.loadMatch(kickoffBackend.matchDetail.id, true);
+            }
+        } else {
+            kickoffBackend.jumpToday();
         }
     }
 }

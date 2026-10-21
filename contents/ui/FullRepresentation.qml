@@ -122,8 +122,14 @@ Item {
                 QQC2.ToolTip.text: text
                 QQC2.ToolTip.visible: hovered || activeFocus
                 onClicked: {
-                    if (root.tab === "table") backend.loadTable(backend.tableLeagueId);
-                    else backend.refreshMatches();
+                    if (root.page === "match" && root.selectedMatchId) {
+                        backend.loadMatch(root.selectedMatchId);
+                        backend.refreshMatches();
+                    } else if (root.tab === "table") {
+                        backend.loadTable(backend.tableLeagueId);
+                    } else {
+                        backend.refreshMatches();
+                    }
                 }
             }
         }

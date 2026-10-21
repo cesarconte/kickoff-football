@@ -521,6 +521,37 @@ function liveMatches(leagues) {
   return out
 }
 
+function hasLiveFollowed(leagues, followed) {
+  var followedList = parseIdList(followed)
+  if (!followedList.length) return false
+  var matches = flattenMatches(leagues)
+  for (var i = 0; i < matches.length; i++) {
+    if (matches[i].state === "live" && involvedFollowed(matches[i], followedList)) {
+      return true
+    }
+  }
+  return false
+}
+
+function hasImminentMatch(leagues) {
+  var now = Date.now()
+  var matches = flattenMatches(leagues)
+  for (var i = 0; i < matches.length; i++) {
+    var m = matches[i]
+    if (m.state === "upcoming") {
+      var ts = Number(m.timeTS || 0) * 1000
+      if (!ts && m.utcTime) {
+        var d = new Date(m.utcTime)
+        ts = d.getTime()
+      }
+      if (ts && (ts - now) <= 15 * 60 * 1000 && (now - ts) <= 15 * 60 * 1000) {
+        return true
+      }
+    }
+  }
+  return false
+}
+
 function matchClock(match) {
   if (!match) return ""
   if (match.state === "cancelled") return match.statusReason || "PP"
@@ -582,11 +613,38 @@ function barHeadline(leagues, followed) {
     return { text: line(liveAll[0]), live: true, count: 1, matchId: liveAll[0].id }
   if (followedList.length === 0 && liveAll.length > 1)
     return { text: liveCountLine(liveAll.length), live: true, count: liveAll.length, matchId: liveAll[0].id }
-  if (nextFollowed)
-    return { text: nextFollowed.home.name + " vs " + nextFollowed.away.name + "  " + kickoffLabel(nextFollowed.utcTime), live: false, count: 0, matchId: nextFollowed.id }
   if (liveAll.length)
     return { text: liveCountLine(liveAll.length), live: true, count: liveAll.length, matchId: liveAll[0].id }
+  if (nextFollowed)
+    return { text: nextFollowed.home.name + " vs " + nextFollowed.away.name + "  " + kickoffLabel(nextFollowed.utcTime), live: false, count: 0, matchId: nextFollowed.id }
   return { text: APP_NAME, live: false, count: 0, matchId: "" }
+}
+
+function barTooltip(leagues, followed, headline) {
+  if (!headline || !headline.live || !headline.count) {
+    return headline && headline.text ? headline.text : APP_NAME
+  }
+  var live = liveMatches(leagues)
+  if (live.length <= 1) {
+    return headline.text
+  }
+  var followedList = parseIdList(followed)
+  var sorted = live.slice().sort(function(a, b) {
+    var aMine = involvedFollowed(a, followedList) ? 1 : 0
+    var bMine = involvedFollowed(b, followedList) ? 1 : 0
+    return bMine - aMine
+  })
+  var lines = [headline.count + (headline.count === 1 ? " match currently live:" : " matches currently live:")]
+  for (var i = 0; i < sorted.length && i < 6; i++) {
+    var m = sorted[i]
+    var score = compactScore(m)
+    var clock = matchClock(m)
+    lines.push(m.home.name + " " + score + " " + m.away.name + (clock ? " (" + clock + ")" : ""))
+  }
+  if (sorted.length > 6) {
+    lines.push("+ " + (sorted.length - 6) + " more")
+  }
+  return lines.join("\n")
 }
 
 function scoreSnapshot(leagues) {
@@ -1165,11 +1223,14 @@ if (typeof module !== "undefined") {
     PINNED_LEAGUE_ID: PINNED_LEAGUE_ID,
     followingMatches: followingMatches,
     liveMatches: liveMatches,
+    hasLiveFollowed: hasLiveFollowed,
+    hasImminentMatch: hasImminentMatch,
     matchClock: matchClock,
     hasScore: hasScore,
     scoreLabel: scoreLabel,
     compactScore: compactScore,
     barHeadline: barHeadline,
+    barTooltip: barTooltip,
     scoreSnapshot: scoreSnapshot,
     goalEvents: goalEvents,
     scanGoals: scanGoals,

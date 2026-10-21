@@ -8,8 +8,10 @@ Item {
     property string dateKey: Model.dateKeyFromDate(new Date())
     property string todayKey: Model.dateKeyFromDate(new Date())
     property var leagues: []
+    property var todayLeagues: []
     property bool refreshing: false
     property bool refreshPending: false
+    property bool refreshingToday: false
     property string lastError: ""
     property date lastUpdated: new Date(0)
 
@@ -50,20 +52,28 @@ Item {
         ? String(followedTeams[0].leagueId)
         : (selectedLeagues.length ? String(selectedLeagues[0].id) : "")
 
+    readonly property var todayVisibleLeagues: Model.orderLeagues(
+        Model.filterLeagues(todayLeagues, selectedLeagues, followedTeams, "selected"),
+        selectedLeagues
+    )
     readonly property var visibleLeagues: Model.orderLeagues(
         Model.filterLeagues(leagues, selectedLeagues, followedTeams, "selected"),
         selectedLeagues
     )
     readonly property var followedMatches: Model.followingMatches(leagues, followedTeams)
-    readonly property var live: Model.liveMatches(leagues)
+    readonly property var live: Model.liveMatches(todayVisibleLeagues)
     readonly property int liveCount: live.length
-    readonly property var headline: Model.barHeadline(leagues, followedTeams)
+    readonly property bool followedLive: Model.hasLiveFollowed(todayVisibleLeagues, followedTeams)
+    readonly property bool matchImminent: Model.hasImminentMatch(todayVisibleLeagues)
+    readonly property var headline: Model.barHeadline(todayVisibleLeagues, followedTeams)
     readonly property string barText: headline ? headline.text : "Kickoff"
-    readonly property string barTooltipText: headline && headline.count > 1
-        ? i18ncp("football match count", "%1 match is currently live", "%1 matches are currently live", headline.count)
-        : barText
+    readonly property string barTooltipText: Model.barTooltip(todayVisibleLeagues, followedTeams, headline)
     readonly property bool barLive: headline ? headline.live === true : false
-    readonly property int pollMs: liveCount > 0 ? 20000 : 180000
+    readonly property int pollMs: followedLive ? 15000 : (liveCount > 0 ? 20000 : (matchImminent ? 30000 : 90000))
+
+    onPollMsChanged: {
+        pollTimer.restart();
+    }
 
     function loadFollowedTeams() {
         try {
@@ -136,14 +146,97 @@ Item {
         saveFollowedTeams();
     }
 
+    function refreshToday() {
+        if (refreshingToday) return;
+        refreshingToday = true;
+        todayKey = Model.dateKeyFromDate(new Date());
+
+        var url = Model.matchesUrl(todayKey);
+        var xhr = new XMLHttpRequest();
+        xhr.timeout = 10000;
+        xhr.open("GET", url);
+        xhr.setRequestHeader("User-Agent", Model.USER_AGENT);
+        xhr.setRequestHeader("Accept", "application/json");
+
+        xhr.ontimeout = function() {
+            refreshingToday = false;
+        };
+
+        xhr.onerror = function() {
+            refreshingToday = false;
+        };
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                refreshingToday = false;
+                if (xhr.status === 200) {
+                    try {
+                        applyTodayMatches(xhr.responseText);
+                    } catch (err) {
+                        console.warn("Kickoff: Error applying today matches:", err);
+                    }
+                }
+            }
+        };
+        xhr.send();
+    }
+
+    function applyTodayMatches(raw) {
+        var parsed = Model.parseMatches(raw);
+        if (!parsed.ok) return;
+
+        var current = Model.scoreSnapshot(parsed.leagues);
+        if (_previousScores) {
+            try {
+                if (notify) {
+                    var toasts = Model.goalEvents(_previousScores, current, followedTeams);
+                    for (var t = 0; t < toasts.length; t++) {
+                        sendToast(toasts[t].headline, toasts[t].description);
+                    }
+                }
+                var celebrations = Model.celebrationEvents(_previousScores, current, followedTeams);
+                for (var c = 0; c < celebrations.length; c++) {
+                    noteGoal(celebrations[c]);
+                }
+                var endings = Model.fullTimeEvents(_previousScores, current, followedTeams);
+                for (var e = 0; e < endings.length; e++) {
+                    matchEnded(endings[e]);
+                    if (notify) {
+                        sendToast("Full Time", endings[e].headline);
+                    }
+                }
+            } catch (eventErr) {
+                console.warn("Kickoff: Error processing match events:", eventErr);
+            }
+        }
+        _previousScores = current;
+        todayLeagues = parsed.leagues;
+        if (dateKey === todayKey) {
+            leagues = parsed.leagues;
+            lastUpdated = new Date();
+            lastError = "";
+            refreshing = false;
+        }
+    }
+
     function refreshMatches() {
+        todayKey = Model.dateKeyFromDate(new Date());
+        if (dateKey === todayKey) {
+            if (refreshing) {
+                refreshPending = true;
+                return;
+            }
+            refreshing = true;
+            refreshToday();
+            return;
+        }
+
         if (refreshing) {
             refreshPending = true;
             return;
         }
         refreshing = true;
         lastError = "";
-        todayKey = Model.dateKeyFromDate(new Date());
 
         var url = Model.matchesUrl(dateKey);
         var xhr = new XMLHttpRequest();
@@ -194,31 +287,6 @@ Item {
             return;
         }
 
-        var current = Model.scoreSnapshot(parsed.leagues);
-        if (_previousScores) {
-            try {
-                if (notify) {
-                    var toasts = Model.goalEvents(_previousScores, current, followedTeams);
-                    for (var t = 0; t < toasts.length; t++) {
-                        sendToast(toasts[t].headline, toasts[t].description);
-                    }
-                }
-                var celebrations = Model.celebrationEvents(_previousScores, current, followedTeams);
-                for (var c = 0; c < celebrations.length; c++) {
-                    noteGoal(celebrations[c]);
-                }
-                var endings = Model.fullTimeEvents(_previousScores, current, followedTeams);
-                for (var e = 0; e < endings.length; e++) {
-                    matchEnded(endings[e]);
-                    if (notify) {
-                        sendToast("Full Time", endings[e].headline);
-                    }
-                }
-            } catch (eventErr) {
-                console.warn("Kickoff: Error processing match events:", eventErr);
-            }
-        }
-        _previousScores = current;
         leagues = parsed.leagues;
         lastUpdated = new Date();
         lastError = "";
@@ -236,7 +304,12 @@ Item {
             return;
         }
         dateKey = next;
-        refreshMatches();
+        if (dateKey === todayKey && todayLeagues && todayLeagues.length > 0) {
+            leagues = todayLeagues;
+            refreshToday();
+        } else {
+            refreshMatches();
+        }
     }
 
     function shiftDate(days) {
@@ -244,15 +317,24 @@ Item {
     }
 
     function jumpToday() {
-        setDateKey(Model.dateKeyFromDate(new Date()));
+        todayKey = Model.dateKeyFromDate(new Date());
+        dateKey = todayKey;
+        if (todayLeagues && todayLeagues.length > 0) {
+            leagues = todayLeagues;
+            refreshToday();
+        } else {
+            refreshMatches();
+        }
     }
 
-    function loadMatch(matchId) {
+    function loadMatch(matchId, isSilent) {
         var id = String(matchId || "");
         if (!id) return;
-        detailLoading = true;
-        detailError = "";
-        matchDetail = matchDetail && String(matchDetail.id) === id ? matchDetail : null;
+        if (!isSilent) {
+            detailLoading = true;
+            detailError = "";
+            matchDetail = matchDetail && String(matchDetail.id) === id ? matchDetail : null;
+        }
 
         var url = Model.matchDetailsUrl(id);
         var xhr = new XMLHttpRequest();
@@ -262,8 +344,10 @@ Item {
         xhr.setRequestHeader("Accept", "application/json");
 
         function handleMatchError(msg) {
-            detailError = msg;
-            detailLoading = false;
+            if (!isSilent) {
+                detailError = msg;
+                detailLoading = false;
+            }
         }
 
         xhr.ontimeout = function() {
@@ -282,14 +366,14 @@ Item {
                         if (parsed.ok && parsed.match) {
                             matchDetail = parsed.match;
                             detailError = "";
-                        } else {
+                        } else if (!isSilent) {
                             detailError = parsed.error || "Could not read match details";
                         }
                     } catch (err) {
-                        detailError = "Could not parse match details";
+                        if (!isSilent) detailError = "Could not parse match details";
                     }
                     detailLoading = false;
-                } else if (xhr.status !== 0) {
+                } else if (xhr.status !== 0 && !isSilent) {
                     handleMatchError("Could not load match details (" + xhr.status + ")");
                 }
             }
@@ -545,14 +629,19 @@ Item {
 
     // Polling timer
     Timer {
+        id: pollTimer
         interval: root.pollMs
         running: true
         repeat: true
         triggeredOnStart: false
         onTriggered: {
             root.todayKey = Model.dateKeyFromDate(new Date());
-            if (root.dateKey === root.todayKey || root.liveCount === 0) {
+            root.refreshToday();
+            if (root.dateKey !== root.todayKey) {
                 root.refreshMatches();
+            }
+            if (root.matchDetail && root.matchDetail.id) {
+                root.loadMatch(root.matchDetail.id, true);
             }
         }
     }
@@ -584,7 +673,10 @@ Item {
         interval: 1200
         repeat: false
         running: false
-        onTriggered: root.refreshMatches()
+        onTriggered: {
+            root.refreshToday();
+            if (root.dateKey !== root.todayKey) root.refreshMatches();
+        }
     }
 
     Component.onCompleted: {

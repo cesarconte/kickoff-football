@@ -42,6 +42,47 @@ test("unfollowed live matches are counted when followed clubs are not playing", 
   assert.equal(result.count, 1);
 });
 
+test("followed club playing live displays full scoreline and clock in barHeadline", () => {
+  const result = Model.barHeadline([{
+    matches: [match(1, "live", 8634, 12)]
+  }], [{ id: "8634", name: "Barcelona", leagueId: "87", leagueName: "LaLiga" }]);
+
+  assert.equal(result.text, "Home 1-0 Away  64'");
+  assert.equal(result.live, true);
+  assert.equal(result.count, 1);
+});
+
+test("hasLiveFollowed detects whether a followed team is currently live", () => {
+  const leagues = [{ matches: [match(1, "live", 8634, 12), match(2, "upcoming", 99, 100)] }];
+  assert.equal(Model.hasLiveFollowed(leagues, [{ id: "8634" }]), true);
+  assert.equal(Model.hasLiveFollowed(leagues, [{ id: "9999" }]), false);
+});
+
+test("hasImminentMatch detects matches starting within 15 minutes", () => {
+  const now = Date.now();
+  const soon = new Date(now + 5 * 60 * 1000).toISOString();
+  const later = new Date(now + 60 * 60 * 1000).toISOString();
+  const imminent = [{ matches: [{ state: "upcoming", utcTime: soon }] }];
+  const distant = [{ matches: [{ state: "upcoming", utcTime: later }] }];
+
+  assert.equal(Model.hasImminentMatch(imminent), true);
+  assert.equal(Model.hasImminentMatch(distant), false);
+});
+
+test("barTooltip provides detailed multi-line summary of live matches", () => {
+  const leagues = [{
+    matches: [
+      match(1, "live", 8634, 12),
+      match(2, "live", 21, 22)
+    ]
+  }];
+  const headline = { text: "LIVE · 2 matches", live: true, count: 2 };
+  const tooltip = Model.barTooltip(leagues, [{ id: "8634" }], headline);
+
+  assert.match(tooltip, /2 matches currently live:/);
+  assert.match(tooltip, /Home 1-0 Away/);
+});
+
 test("goal celebration always uses the requested GOAL label", () => {
   for (const seed of [0, 1, 2, 3, 4, 5, 100]) {
     assert.equal(Model.celebrationLine({}, seed), "GOAL!");
