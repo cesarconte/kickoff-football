@@ -75,16 +75,19 @@ Item {
         Behavior on border.color { ColorAnimation { duration: 180 } }
     }
 
-    Row {
+    RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: 8
+        anchors.leftMargin: 10
         anchors.rightMargin: 10
+        anchors.topMargin: 6
+        anchors.bottomMargin: 6
         spacing: 8
 
         // Status / live indicator gutter
         Item {
-            width: 18
-            height: parent.height
+            visible: root.live || root.showCompetition
+            Layout.preferredWidth: 16
+            Layout.fillHeight: true
 
             Text {
                 textFormat: Text.PlainText
@@ -93,7 +96,7 @@ Item {
                 visible: root.live
                 text: Model.BALL_GLYPH
                 font.family: root.emojiFamily
-                font.pixelSize: 13
+                font.pixelSize: 12
 
                 SequentialAnimation on opacity {
                     running: root.live
@@ -117,130 +120,135 @@ Item {
         }
 
         // Team logos column
-        Column {
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 6
+        ColumnLayout {
+            Layout.preferredWidth: 16
+            Layout.alignment: Qt.AlignVCenter
+            spacing: 4
 
-            Image {
-                width: 16
-                height: 16
-                source: match && match.home ? Model.teamLogoUrl(match.home.id) : ""
-                sourceSize.width: 48
-                sourceSize.height: 48
-                fillMode: Image.PreserveAspectFit
-                asynchronous: true
-                visible: status === Image.Ready
+            Item {
+                Layout.preferredWidth: 16
+                Layout.preferredHeight: 16
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+
+                Image {
+                    anchors.fill: parent
+                    source: match && match.home ? Model.teamLogoUrl(match.home.id) : ""
+                    sourceSize.width: 48
+                    sourceSize.height: 48
+                    fillMode: Image.PreserveAspectFit
+                    asynchronous: true
+                    visible: status === Image.Ready
+                }
             }
 
-            Image {
-                width: 16
-                height: 16
-                source: match && match.away ? Model.teamLogoUrl(match.away.id) : ""
-                sourceSize.width: 48
-                sourceSize.height: 48
-                fillMode: Image.PreserveAspectFit
-                asynchronous: true
-                visible: status === Image.Ready
+            Item {
+                Layout.preferredWidth: 16
+                Layout.preferredHeight: 16
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+
+                Image {
+                    anchors.fill: parent
+                    source: match && match.away ? Model.teamLogoUrl(match.away.id) : ""
+                    sourceSize.width: 48
+                    sourceSize.height: 48
+                    fillMode: Image.PreserveAspectFit
+                    asynchronous: true
+                    visible: status === Image.Ready
+                }
             }
         }
 
         // Team names column
-        Column {
-            width: parent.width - 150
-            anchors.verticalCenter: parent.verticalCenter
+        ColumnLayout {
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter
             spacing: 4
 
-            Row {
-                width: parent.width
-                spacing: 6
-
-                Text {
-                    textFormat: Text.PlainText
-                    width: parent.width - (homeNet.visible ? homeNet.width + 6 : 0)
-                    text: match && match.home ? match.home.name : ""
-                    color: root.foreground
-                    font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
-                    font.bold: root.live || root.winner === "home"
-                    elide: Text.ElideRight
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-
-                Text {
-                    textFormat: Text.PlainText
-                    id: homeNet
-                    visible: root.winner === "home"
-                    text: Model.NET_GLYPH
-                    font.family: root.emojiFamily
-                    font.pixelSize: 11
-                    anchors.verticalCenter: parent.verticalCenter
-                }
+            Text {
+                textFormat: Text.PlainText
+                Layout.fillWidth: true
+                Layout.preferredHeight: 16
+                verticalAlignment: Text.AlignVCenter
+                text: match && match.home ? match.home.name : ""
+                color: root.winner === "away" ? root.dim : root.foreground
+                font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
+                font.bold: root.winner === "home"
+                elide: Text.ElideRight
             }
 
-            Row {
-                width: parent.width
-                spacing: 6
-
-                Text {
-                    textFormat: Text.PlainText
-                    width: parent.width - (awayNet.visible ? awayNet.width + 6 : 0)
-                    text: match && match.away ? match.away.name : ""
-                    color: root.foreground
-                    font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
-                    font.bold: root.live || root.winner === "away"
-                    elide: Text.ElideRight
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-
-                Text {
-                    textFormat: Text.PlainText
-                    id: awayNet
-                    visible: root.winner === "away"
-                    text: Model.NET_GLYPH
-                    font.family: root.emojiFamily
-                    font.pixelSize: 11
-                    anchors.verticalCenter: parent.verticalCenter
-                }
+            Text {
+                textFormat: Text.PlainText
+                Layout.fillWidth: true
+                Layout.preferredHeight: 16
+                verticalAlignment: Text.AlignVCenter
+                text: match && match.away ? match.away.name : ""
+                color: root.winner === "home" ? root.dim : root.foreground
+                font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
+                font.bold: root.winner === "away"
+                elide: Text.ElideRight
             }
         }
 
-        // Scores and Clock column
-        Column {
-            width: 80
-            anchors.verticalCenter: parent.verticalCenter
+        // Scores column (strictly aligned in its own vertical column)
+        ColumnLayout {
+            visible: !root.upcoming
+            Layout.preferredWidth: 26
+            Layout.alignment: Qt.AlignVCenter
             spacing: 4
             transformOrigin: Item.Right
             scale: 1 + root.goalFlash * 0.15
 
             Text {
                 textFormat: Text.PlainText
-                width: parent.width
-                text: root.upcoming ? "" : (match && match.home && match.home.score !== null ? String(match.home.score) : "")
-                color: root.foreground
-                font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
-                font.bold: true
+                Layout.fillWidth: true
+                Layout.preferredHeight: 16
                 horizontalAlignment: Text.AlignRight
+                verticalAlignment: Text.AlignVCenter
+                text: match && match.home && match.home.score !== null ? String(match.home.score) : ""
+                color: root.winner === "away" ? root.dim : root.foreground
+                font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
+                font.bold: root.live || root.winner === "home"
             }
 
-            Row {
-                width: parent.width
-                spacing: 6
-                layoutDirection: Qt.RightToLeft
+            Text {
+                textFormat: Text.PlainText
+                Layout.fillWidth: true
+                Layout.preferredHeight: 16
+                horizontalAlignment: Text.AlignRight
+                verticalAlignment: Text.AlignVCenter
+                text: match && match.away && match.away.score !== null ? String(match.away.score) : ""
+                color: root.winner === "home" ? root.dim : root.foreground
+                font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
+                font.bold: root.live || root.winner === "away"
+            }
+        }
+
+        // Match Status / Clock badge column
+        Item {
+            visible: root.clock !== ""
+            Layout.preferredWidth: Math.max(statusBadge.width, 42)
+            Layout.fillHeight: true
+
+            Rectangle {
+                id: statusBadge
+                anchors.centerIn: parent
+                width: Math.max(statusText.implicitWidth + 12, 38)
+                height: 22
+                radius: 4
+                color: root.live
+                    ? Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.15)
+                    : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.06)
+                border.width: root.live ? 1 : 0
+                border.color: root.live ? Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.5) : "transparent"
 
                 Text {
+                    id: statusText
                     textFormat: Text.PlainText
+                    anchors.centerIn: parent
                     text: root.clock
-                    color: root.clockColor
+                    color: root.live ? root.accent : root.dim
                     font.pixelSize: Kirigami.Theme.smallFont.pixelSize
                     font.bold: root.live
-                }
-
-                Text {
-                    textFormat: Text.PlainText
-                    visible: !root.upcoming
-                    text: match && match.away && match.away.score !== null ? String(match.away.score) : ""
-                    color: root.foreground
-                    font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
-                    font.bold: true
                 }
             }
         }
