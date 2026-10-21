@@ -39,28 +39,40 @@ fixtures, the matches of the clubs you follow and the standings of the competiti
 
 ```bash
 git clone https://github.com/cesarconte/kickoff-football.git
-cp -r kickoff-football ~/.local/share/plasma/plasmoids/org.kde.plasma.kickoff-football
-systemctl --user restart plasma-plasmashell.service
+cd kickoff-football
+./scripts/install.sh
 ```
 
 Then add the widget to your panel or desktop: right-click the panel → **Add Widgets…** →
 search for **Kickoff**.
 
+`scripts/install.sh` is the canonical installer. It fast-forwards the repository to
+`origin/main`, copies the plasmoid package (`metadata.json` + `contents/`) into
+`~/.local/share/plasma/plasmoids/org.kde.plasma.kickoff-football/` and reloads Plasma. The
+installed folder is a plain directory — not a symlink and not a clone — so it holds only the
+plasmoid package. The widget's own configuration lives in Plasma's applet configuration and is
+never touched by the installer.
+
+### Keeping the installed widget up to date
+
+Re-run the installer whenever you want the installed widget to match GitHub:
+
+```bash
+./scripts/install.sh          # pull from GitHub, reinstall, reload Plasma
+./scripts/install.sh --no-pull  # reinstall the current working tree as is
+```
+
 ### For development
 
-Symlink the working copy so changes are picked up immediately:
+After any QML change, reinstall and reload so the panel picks it up:
 
 ```bash
-ln -s /path/to/kickoff-football \
-  ~/.local/share/plasma/plasmoids/org.kde.plasma.kickoff-football
-systemctl --user restart plasma-plasmashell.service
+./scripts/install.sh --no-pull
 ```
 
-After any QML change, restart `plasmashell` so the panel picks it up:
-
-```bash
-systemctl --user restart plasma-plasmashell.service
-```
+This is equivalent to copying `contents/` into the plasmoids directory and running
+`systemctl --user restart plasma-plasmashell.service`, which is the standard KDE workflow for
+picking up QML changes.
 
 ## Usage
 
@@ -104,6 +116,7 @@ contents/
   config/      configuration UI (KCM)
   locale/es/   Spanish translation (.po / .mo)
   ui/          QML representations and the data backend
+scripts/       install/update script for the plasmoid
 tests/         Node unit tests for Model.js
 ```
 
