@@ -77,6 +77,8 @@ MouseArea {
 
     Layout.minimumWidth: vertical ? Kirigami.Units.iconSizes.small : contentRow.implicitWidth + 12
     Layout.minimumHeight: Kirigami.Units.iconSizes.small
+    Layout.preferredWidth: Layout.minimumWidth
+    Layout.preferredHeight: Layout.minimumHeight
 
     onClicked: mouse => {
         if (mouse.button === Qt.MiddleButton) {
@@ -94,6 +96,8 @@ MouseArea {
         KickoffIcon {
             id: ballIcon
             iconSize: vertical ? Math.min(root.width, root.height) - 4 : 16
+            Layout.preferredWidth: iconSize
+            Layout.preferredHeight: iconSize
         }
 
         // Pill / Text label (only in horizontal panel)
@@ -109,7 +113,7 @@ MouseArea {
 
         Text {
             id: normalLabel
-            visible: !root.vertical && root.shoutText === ""
+            visible: !root.vertical && root.shoutText === "" && backend.barText !== ""
             text: backend.barText
             color: root.foreground
             font.bold: false

@@ -618,16 +618,19 @@ function barHeadline(leagues, followed) {
     return { text: liveCountLine(liveAll.length), live: true, count: liveAll.length, matchId: liveAll[0].id }
   if (nextFollowed)
     return { text: nextFollowed.home.name + " vs " + nextFollowed.away.name + "  " + kickoffLabel(nextFollowed.utcTime), live: false, count: 0, matchId: nextFollowed.id }
-  return { text: APP_NAME, live: false, count: 0, matchId: "" }
+  return { text: "", live: false, count: 0, matchId: "" }
 }
 
 function barTooltip(leagues, followed, headline) {
   if (!headline || !headline.live || !headline.count) {
-    return headline && headline.text ? headline.text : APP_NAME
+    if (!headline || !headline.text || headline.text === APP_NAME) {
+      return ""
+    }
+    return headline.text
   }
   var live = liveMatches(leagues)
   if (live.length <= 1) {
-    return headline.text
+    return (!headline || !headline.text || headline.text === APP_NAME) ? "" : headline.text
   }
   var followedList = parseIdList(followed)
   var sorted = live.slice().sort(function(a, b) {

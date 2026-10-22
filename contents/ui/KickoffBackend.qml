@@ -66,7 +66,7 @@ Item {
     readonly property bool followedLive: Model.hasLiveFollowed(todayVisibleLeagues, followedTeams)
     readonly property bool matchImminent: Model.hasImminentMatch(todayVisibleLeagues)
     readonly property var headline: Model.barHeadline(todayVisibleLeagues, followedTeams)
-    readonly property string barText: headline ? headline.text : "Kickoff"
+    readonly property string barText: headline && headline.text && headline.text !== "Kickoff" ? headline.text : ""
     readonly property string barTooltipText: Model.barTooltip(todayVisibleLeagues, followedTeams, headline)
     readonly property bool barLive: headline ? headline.live === true : false
     readonly property int pollMs: followedLive ? 15000 : (liveCount > 0 ? 20000 : (matchImminent ? 30000 : 90000))

@@ -139,3 +139,25 @@ test("matches tab keeps competitions in Settings order and leaves followed match
   assert.equal(visible[1].matches.length, 1);
   assert.equal(visible[2].matches[0].home.id, "401657");
 });
+
+test("barHeadline returns empty text when no matches are scheduled for that day", () => {
+  const result = Model.barHeadline([], []);
+  assert.equal(result.text, "");
+  assert.equal(result.live, false);
+  assert.equal(result.count, 0);
+});
+
+test("barHeadline returns empty text when matches are upcoming but none are followed", () => {
+  const result = Model.barHeadline([{
+    matches: [match(1, "upcoming", 11, 12)]
+  }], [{ id: "99" }]);
+
+  assert.equal(result.text, "");
+  assert.equal(result.live, false);
+});
+
+test("barTooltip returns empty string when headline has no text or matches APP_NAME", () => {
+  assert.equal(Model.barTooltip([], [], { text: "" }), "");
+  assert.equal(Model.barTooltip([], [], { text: "Kickoff" }), "");
+  assert.equal(Model.barTooltip([], [], null), "");
+});

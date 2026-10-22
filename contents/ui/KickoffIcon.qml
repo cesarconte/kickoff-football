@@ -8,6 +8,8 @@ Item {
 
     width: iconSize
     height: iconSize
+    implicitWidth: iconSize
+    implicitHeight: iconSize
 
     Kirigami.Icon {
         anchors.fill: parent
