@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import CachyOS.UI
 import org.kde.plasma.components as PlasmaComponents3
 import "Model.js" as Model
 
@@ -24,9 +25,9 @@ Item {
         return backend.table.name || "";
     }
 
-    readonly property color foreground: Kirigami.Theme.textColor
-    readonly property color dim: Kirigami.Theme.disabledTextColor
-    readonly property color accent: Kirigami.Theme.highlightColor
+    readonly property color foreground: CachyTheme.textPrimary
+    readonly property color dim: CachyTheme.textMuted
+    readonly property color accent: CachyTheme.accentColor
     readonly property color urgent: Kirigami.Theme.negativeTextColor
 
     // Translation maps for API data (FotMob returns English)
@@ -107,7 +108,7 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: Kirigami.Units.largeSpacing
+        anchors.margins: CachyTheme.spacingLarge
         spacing: 8
 
         // Top Navigation Header
@@ -395,7 +396,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         visible: backend.tableLeagues.length > 0
-                        spacing: Kirigami.Units.smallSpacing
+                        spacing: CachyTheme.spacingSmall
 
                         PlasmaComponents3.ToolButton {
                             icon.name: "go-previous"
@@ -487,7 +488,7 @@ Item {
                         Text {
                             textFormat: Text.PlainText
                             Layout.preferredWidth: 36
-                            Layout.rightMargin: Kirigami.Units.smallSpacing
+                            Layout.rightMargin: CachyTheme.spacingSmall
                             text: "PTS"
                             color: root.dim
                             font.bold: true
@@ -552,7 +553,7 @@ Item {
                             Text {
                                 textFormat: Text.PlainText
                                 Layout.preferredWidth: 36
-                                Layout.rightMargin: Kirigami.Units.smallSpacing
+                                Layout.rightMargin: CachyTheme.spacingSmall
                                 text: String(modelData.pts)
                                 color: root.foreground
                                 font.bold: true

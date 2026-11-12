@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import CachyOS.UI
 import org.kde.kcmutils as KCM
 import "Model.js" as Model
 
@@ -190,7 +191,7 @@ KCM.SimpleKCM {
     // height correctly for interactive ListViews with drag handles).
     ColumnLayout {
         width: parent ? parent.width : undefined
-        spacing: Kirigami.Units.largeSpacing
+        spacing: CachyTheme.spacingLarge
 
         // ── Notifications ─────────────────────────────────────
         Kirigami.FormLayout {
@@ -224,32 +225,32 @@ KCM.SimpleKCM {
         // Search results feedback
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
+            spacing: CachyTheme.spacingSmall
             visible: leagueSearchField.text.trim().length >= 2
 
             QQC2.Label {
                 visible: root.leagueSearchLoading
                 text: i18n("Searching competitions...")
-                color: Kirigami.Theme.disabledTextColor
+                color: CachyTheme.textMuted
             }
             RowLayout {
                 visible: root.leagueSearchError !== ""
-                spacing: Kirigami.Units.smallSpacing
+                spacing: CachyTheme.spacingSmall
                 Kirigami.Icon { source: "dialog-warning"; implicitWidth: Kirigami.Units.iconSizes.small; implicitHeight: Kirigami.Units.iconSizes.small }
                 QQC2.Label { text: i18n("Could not search competitions. Try again."); color: Kirigami.Theme.negativeTextColor; wrapMode: Text.WordWrap; Layout.fillWidth: true }
             }
             RowLayout {
                 visible: leagueSearchField.text.trim().length >= 2 && !root.leagueSearchLoading && root.leagueSearchError === "" && root.leagueSearchResults.length === 0
-                spacing: Kirigami.Units.smallSpacing
+                spacing: CachyTheme.spacingSmall
                 Kirigami.Icon { source: "search"; implicitWidth: Kirigami.Units.iconSizes.small; implicitHeight: Kirigami.Units.iconSizes.small }
-                QQC2.Label { text: i18n("No matching competitions"); color: Kirigami.Theme.disabledTextColor }
+                QQC2.Label { text: i18n("No matching competitions"); color: CachyTheme.textMuted }
             }
             Repeater {
                 model: root.leagueSearchResults
                 delegate: RowLayout {
                     required property var modelData
                     Layout.fillWidth: true
-                    spacing: Kirigami.Units.smallSpacing
+                    spacing: CachyTheme.spacingSmall
                     QQC2.Label { Layout.fillWidth: true; text: modelData.name + (modelData.ccode ? " - " + modelData.ccode : ""); elide: Text.ElideRight }
                     QQC2.Button {
                         text: root.isLeagueSelected(modelData.id) ? i18n("Selected") : i18n("Add")
@@ -265,7 +266,7 @@ KCM.SimpleKCM {
             Layout.fillWidth: true
             text: i18n("Selected competitions (%1)", selectedLeaguesModel.count)
             font.bold: true
-            color: Kirigami.Theme.disabledTextColor
+            color: CachyTheme.textMuted
         }
 
         // ── Drag-reorderable ListView ─────────────────────────
@@ -305,7 +306,7 @@ KCM.SimpleKCM {
                     highlighted: dragHandle.dragActive
 
                     contentItem: RowLayout {
-                        spacing: Kirigami.Units.smallSpacing
+                        spacing: CachyTheme.spacingSmall
 
                         Kirigami.ListItemDragHandle {
                             id: dragHandle
@@ -364,28 +365,28 @@ KCM.SimpleKCM {
 
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
+            spacing: CachyTheme.spacingSmall
             visible: clubSearchField.text.trim().length >= 2
 
-            QQC2.Label { visible: root.clubSearchLoading; text: i18n("Searching clubs..."); color: Kirigami.Theme.disabledTextColor }
+            QQC2.Label { visible: root.clubSearchLoading; text: i18n("Searching clubs..."); color: CachyTheme.textMuted }
             RowLayout {
                 visible: root.clubSearchError !== ""
-                spacing: Kirigami.Units.smallSpacing
+                spacing: CachyTheme.spacingSmall
                 Kirigami.Icon { source: "dialog-warning"; implicitWidth: Kirigami.Units.iconSizes.small; implicitHeight: Kirigami.Units.iconSizes.small }
                 QQC2.Label { text: i18n("Could not search clubs. Try again."); color: Kirigami.Theme.negativeTextColor; wrapMode: Text.WordWrap; Layout.fillWidth: true }
             }
             RowLayout {
                 visible: clubSearchField.text.trim().length >= 2 && !root.clubSearchLoading && root.clubSearchError === "" && root.clubSearchResults.length === 0
-                spacing: Kirigami.Units.smallSpacing
+                spacing: CachyTheme.spacingSmall
                 Kirigami.Icon { source: "search"; implicitWidth: Kirigami.Units.iconSizes.small; implicitHeight: Kirigami.Units.iconSizes.small }
-                QQC2.Label { text: i18n("No matching clubs"); color: Kirigami.Theme.disabledTextColor }
+                QQC2.Label { text: i18n("No matching clubs"); color: CachyTheme.textMuted }
             }
             Repeater {
                 model: root.clubSearchResults
                 delegate: RowLayout {
                     required property var modelData
                     Layout.fillWidth: true
-                    spacing: Kirigami.Units.smallSpacing
+                    spacing: CachyTheme.spacingSmall
                     Image {
                         width: 20; height: 20
                         source: Model.teamLogoUrl(modelData.id)
@@ -401,7 +402,7 @@ KCM.SimpleKCM {
                             Layout.fillWidth: true
                             text: modelData.leagueName || ""
                             font.pointSize: Kirigami.Theme.smallFont.pointSize
-                            color: Kirigami.Theme.disabledTextColor
+                            color: CachyTheme.textMuted
                             elide: Text.ElideRight
                             visible: text !== ""
                         }
@@ -420,14 +421,14 @@ KCM.SimpleKCM {
             Layout.fillWidth: true
             text: i18n("Followed clubs (%1)", root.followedTeams.length)
             font.bold: true
-            color: Kirigami.Theme.disabledTextColor
+            color: CachyTheme.textMuted
         }
 
         QQC2.Label {
             visible: root.followedTeams.length === 0
             text: i18n("Search for clubs above to follow them and receive goal notifications.")
             wrapMode: Text.WordWrap
-            color: Kirigami.Theme.disabledTextColor
+            color: CachyTheme.textMuted
             Layout.fillWidth: true
         }
 
@@ -436,7 +437,7 @@ KCM.SimpleKCM {
             delegate: RowLayout {
                 required property var modelData
                 Layout.fillWidth: true
-                spacing: Kirigami.Units.smallSpacing
+                spacing: CachyTheme.spacingSmall
                 Image {
                     width: 18; height: 18
                     source: Model.teamLogoUrl(modelData.id)
@@ -457,6 +458,6 @@ KCM.SimpleKCM {
         }
 
         // Bottom padding
-        Item { implicitHeight: Kirigami.Units.largeSpacing }
+        Item { implicitHeight: CachyTheme.spacingLarge }
     }
 }

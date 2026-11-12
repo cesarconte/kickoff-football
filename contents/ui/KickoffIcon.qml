@@ -1,5 +1,6 @@
 import QtQuick
 import org.kde.kirigami as Kirigami
+import CachyOS.UI
 
 Item {
     id: root
@@ -14,7 +15,7 @@ Item {
     Kirigami.Icon {
         anchors.fill: parent
         source: "games-highscores-symbolic"
-        color: Kirigami.Theme.textColor
+        color: CachyTheme.textPrimary
     }
 
 }

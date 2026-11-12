@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import CachyOS.UI
 import "Model.js" as Model
 
 Item {
@@ -21,9 +22,9 @@ Item {
     signal clicked()
     signal hovered(bool isHovered)
 
-    readonly property color foreground: Kirigami.Theme.textColor
-    readonly property color dim: Kirigami.Theme.disabledTextColor
-    readonly property color accent: Kirigami.Theme.highlightColor
+    readonly property color foreground: CachyTheme.textPrimary
+    readonly property color dim: CachyTheme.textMuted
+    readonly property color accent: CachyTheme.accentColor
     readonly property string emojiFamily: "Noto Color Emoji"
 
     readonly property bool live: match && match.state === "live"

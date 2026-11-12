@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import CachyOS.UI
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
 import "Model.js" as Model
@@ -11,9 +12,9 @@ MouseArea {
     required property var backend
 
     readonly property bool vertical: Plasmoid.formFactor === PlasmaCore.Types.Vertical
-    readonly property color foreground: Kirigami.Theme.textColor
-    readonly property color accent: Kirigami.Theme.highlightColor
-    readonly property color dim: Kirigami.Theme.disabledTextColor
+    readonly property color foreground: CachyTheme.textPrimary
+    readonly property color accent: CachyTheme.accentColor
+    readonly property color dim: CachyTheme.textMuted
 
     signal toggleRequested()
     signal refreshRequested()
