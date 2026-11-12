@@ -603,13 +603,14 @@ Item {
                     // Big Match Card (Home vs Away)
                     Rectangle {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 110
+                        Layout.preferredHeight: Math.max(110, matchCardRow.implicitHeight + 20)
                         radius: 8
                         color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.05)
                         border.width: 1
                         border.color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.15)
 
                         RowLayout {
+                            id: matchCardRow
                             anchors.fill: parent
                             anchors.margins: 10
                             spacing: 8
@@ -638,6 +639,8 @@ Item {
                                     font.bold: true
                                     horizontalAlignment: Text.AlignHCenter
                                     wrapMode: Text.WordWrap
+                                    maximumLineCount: 2
+                                    elide: Text.ElideRight
                                 }
                             }
 
@@ -690,6 +693,8 @@ Item {
                                     font.bold: true
                                     horizontalAlignment: Text.AlignHCenter
                                     wrapMode: Text.WordWrap
+                                    maximumLineCount: 2
+                                    elide: Text.ElideRight
                                 }
                             }
                         }
@@ -698,6 +703,7 @@ Item {
                     // Follow Home / Away buttons
                     RowLayout {
                         Layout.alignment: Qt.AlignHCenter
+                         Layout.topMargin: 8
                         spacing: 8
 
                         PlasmaComponents3.Button {
