@@ -604,10 +604,10 @@ Item {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: Math.max(110, matchCardRow.implicitHeight + 20)
-                        radius: 8
-                        color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.05)
+                        radius: CachyTheme.radiusMedium
+                        color: CachyTheme.cardBackground
                         border.width: 1
-                        border.color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.15)
+                        border.color: CachyTheme.specularBorder
 
                         RowLayout {
                             id: matchCardRow
@@ -706,15 +706,15 @@ Item {
                          Layout.topMargin: 8
                         spacing: 8
 
-                        PlasmaComponents3.Button {
+                        CachyButton {
                             text: backend.matchDetail && backend.isTeamFollowed(backend.matchDetail.home.id) ? i18n("Following Home") : i18n("Follow Home")
-                            highlighted: backend.matchDetail && backend.isTeamFollowed(backend.matchDetail.home.id)
+                            primary: backend.matchDetail && backend.isTeamFollowed(backend.matchDetail.home.id)
                             onClicked: if (backend.matchDetail) backend.toggleFollowTeam(backend.matchDetail.home)
                         }
 
-                        PlasmaComponents3.Button {
+                        CachyButton {
                             text: backend.matchDetail && backend.isTeamFollowed(backend.matchDetail.away.id) ? i18n("Following Away") : i18n("Follow Away")
-                            highlighted: backend.matchDetail && backend.isTeamFollowed(backend.matchDetail.away.id)
+                            primary: backend.matchDetail && backend.isTeamFollowed(backend.matchDetail.away.id)
                             onClicked: if (backend.matchDetail) backend.toggleFollowTeam(backend.matchDetail.away)
                         }
                     }
