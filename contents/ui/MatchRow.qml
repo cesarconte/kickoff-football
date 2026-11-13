@@ -22,9 +22,15 @@ Item {
     signal clicked()
     signal hovered(bool isHovered)
 
-    readonly property color foreground: CachyTheme.textPrimary
-    readonly property color dim: CachyTheme.textMuted
-    readonly property color accent: CachyTheme.accentColor
+    // Paleta del plasmoide (regla Golden Gate): el color lo aporta
+    // CachyPalette, que resuelve la paleta efectiva de la superficie real
+    // (tema de escritorio de Plasma dentro de plasmashell). Con el tema
+    // macOS-GoldenGate esa superficie es oscura y el texto blanco, así que el
+    // contraste queda garantizado. La geometría (radios, espaciados) y el
+    // acento salen de CachyTheme.
+    readonly property color foreground: CachyPalette.text
+    readonly property color dim: CachyPalette.textSecondary
+    readonly property color accent: CachyPalette.accentText
     readonly property string emojiFamily: "Noto Color Emoji"
 
     readonly property bool live: match && match.state === "live"

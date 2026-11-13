@@ -25,10 +25,24 @@ Item {
         return backend.table.name || "";
     }
 
-    readonly property color foreground: CachyTheme.textPrimary
-    readonly property color dim: CachyTheme.textMuted
-    readonly property color accent: CachyTheme.accentColor
-    readonly property color urgent: Kirigami.Theme.negativeTextColor
+    // Paleta del plasmoide (regla Golden Gate):
+    //
+    //   * El COLOR lo aporta CachyPalette, que resuelve la paleta EFECTIVA de
+    //     la superficie sobre la que se dibuja el plasmoide (el tema de
+    //     escritorio de Plasma dentro de plasmashell, el palette de la
+    //     aplicación en una app). Con el tema macOS-GoldenGate esa superficie
+    //     es siempre oscura y el texto blanco, así que el contraste queda
+    //     garantizado en cualquier modo.
+    //   * CachyTheme.isDark() decide con QStyleHints::colorScheme(), que
+    //     refleja el color scheme de la app y no el tema de escritorio del
+    //     panel: usarlo aquí devolvía texto negro sobre el popup oscuro.
+    //   * La GEOMETRÍA (radios, espaciados) y el color de acento salen de
+    //     CachyTheme, para que la estética sea idéntica en todos los plasmoides
+    //     y en todas las aplicaciones del ecosistema.
+    readonly property color foreground: CachyPalette.text
+    readonly property color dim: CachyPalette.textSecondary
+    readonly property color accent: CachyPalette.accentText
+    readonly property color urgent: CachyPalette.errorColor
 
     // Translation maps for API data (FotMob returns English)
     readonly property var statTranslations: ({
@@ -605,9 +619,9 @@ Item {
                         Layout.fillWidth: true
                         Layout.preferredHeight: Math.max(110, matchCardRow.implicitHeight + 20)
                         radius: CachyTheme.radiusMedium
-                        color: CachyTheme.cardBackground
+                        color: CachyPalette.cardBackground
                         border.width: 1
-                        border.color: CachyTheme.specularBorder
+                        border.color: CachyPalette.specularBorder
 
                         RowLayout {
                             id: matchCardRow

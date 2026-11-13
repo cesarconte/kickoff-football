@@ -1,5 +1,4 @@
 import QtQuick
-import org.kde.kirigami as Kirigami
 import CachyOS.UI
 
 Item {
@@ -12,10 +11,14 @@ Item {
     implicitWidth: iconSize
     implicitHeight: iconSize
 
-    Kirigami.Icon {
+    // CachyPlasmoidIcon resuelve el icono en el tema de iconos de Plasma y lo
+    // tiñe con el primer plano del tema anfitrión (blanco en el tema de
+    // escritorio macOS-GoldenGate), de modo que sigue el Tema Automático y
+    // es siempre legible sobre el panel.
+    CachyPlasmoidIcon {
         anchors.fill: parent
-        source: "games-highscores-symbolic"
-        color: CachyTheme.textPrimary
+        iconName: "games-highscores-symbolic"
+        iconSize: root.iconSize
     }
 
 }

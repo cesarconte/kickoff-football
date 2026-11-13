@@ -12,9 +12,15 @@ MouseArea {
     required property var backend
 
     readonly property bool vertical: Plasmoid.formFactor === PlasmaCore.Types.Vertical
-    readonly property color foreground: CachyTheme.textPrimary
-    readonly property color accent: CachyTheme.accentColor
-    readonly property color dim: CachyTheme.textMuted
+    // Paleta del plasmoide (regla Golden Gate): el color lo aporta
+    // CachyPalette, que resuelve la paleta efectiva de la superficie real
+    // (tema de escritorio de Plasma dentro de plasmashell). Con el tema
+    // macOS-GoldenGate esa superficie es oscura y el texto blanco, así que el
+    // contraste queda garantizado. La geometría y el acento salen de
+    // CachyTheme.
+    readonly property color foreground: CachyPalette.text
+    readonly property color accent: CachyPalette.accentText
+    readonly property color dim: CachyPalette.textSecondary
 
     signal toggleRequested()
     signal refreshRequested()
