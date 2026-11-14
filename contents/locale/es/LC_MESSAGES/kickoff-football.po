@@ -354,6 +354,27 @@ msgstr "Notificaciones:"
 msgid "Goal notifications (desktop alert when followed club scores)"
 msgstr "Notificaciones de goles (alerta de escritorio cuando un club seguido marca)"
 
+msgid "Goal notifications (desktop alert when a followed club scores)"
+msgstr "Notificaciones de goles (alerta de escritorio cuando un club seguido marca)"
+
+msgid "Search clubs..."
+msgstr "Buscar clubes..."
+
+msgid "Search competitions..."
+msgstr "Buscar competiciones..."
+
+msgid "Search for clubs above to follow them and receive goal notifications."
+msgstr "Busca clubes arriba para seguirlos y recibir notificaciones de goles."
+
+msgid "Searching clubs..."
+msgstr "Buscando clubes..."
+
+msgid "Searching competitions..."
+msgstr "Buscando competiciones..."
+
+msgid "Unfollow"
+msgstr "Dejar de seguir"
+
 #: config.qml
 msgid "General"
 msgstr "General"
